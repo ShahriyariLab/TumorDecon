@@ -73,6 +73,8 @@ def df_normalization(df, scaling, axis=0):
         min_max_scaler = preprocessing.MinMaxScaler()
         if axis == 1:
             df_norm = df.transpose()
+        else:
+            df_norm = df.copy()
         df_norm = min_max_scaler.fit_transform(df_norm)
         df_norm = pd.DataFrame(df_norm)
         if axis == 1:
