@@ -76,7 +76,7 @@ def tumor_deconvolve(mixture_data, method, patient_IDs='ALL', cell_signatures=No
         else:
             raise ValueError("'cell_signatures' argument required for CIBERSORT method")
 
-    elif method == 'DeconRNASeq':
+    elif method in ['DeconRNASeq', 'deconrnaseq', 'DeconRNAseq', 'deconRNAseq']:
         if cell_signatures is not None:
             x = DeconRNASeq_main(mixture_data, cell_signatures, patient_IDs, args)
         else:
