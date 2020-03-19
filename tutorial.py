@@ -27,7 +27,6 @@ sig = td.read_lm22_file('data/LM22.txt')
 #       defaults are nu=0.5, C=1.0, kernel=linear
 ciber_freqs = td.tumor_deconvolve(rna, 'cibersort',  patient_IDs='ALL', cell_signatures=sig, args={'scaling':'minmax', 'scaling_axis':1})
 print(ciber_freqs)
-sys.exit()
 
 # Run DeconRNASeq:
 # optional argments include:
