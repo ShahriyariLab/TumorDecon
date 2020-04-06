@@ -28,6 +28,19 @@ sig = td.read_lm22_file('data/LM22.txt')
 ciber_freqs = td.tumor_deconvolve(rna, 'cibersort',  patient_IDs='ALL', cell_signatures=sig, args={'scaling':'minmax', 'scaling_axis':1})
 print(ciber_freqs)
 
+# Can visualize results with boxplots:
+# (Currently only works for frequencies generated for the 22 cell types in the LM22 signature matrix):
+td.cell_frequency_boxplot(ciber_freqs)
+
+# Can also visualize with barcharts:
+td.cell_frequency_barchart(ciber_freqs)
+
+# Clustermaps:
+td.hierarchical_clustering(ciber_freqs)
+
+# Pair plots:
+td.pair_plot(ciber_freqs)
+
 # Run DeconRNASeq:
 # optional argments include:
 #    'scaling': Same as in cibersort
