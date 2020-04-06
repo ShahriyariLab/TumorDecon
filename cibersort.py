@@ -100,4 +100,5 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
         else:
             raise ValueError("patient_ID ({!r}) not present in rna dataframe".format(patient))
 
+    cell_freqs_df = cell_freqs_df.transpose()
     return cell_freqs_df

@@ -202,14 +202,15 @@ def DeconRNASeq_main(rna_df, sig_df, patient_IDs='ALL', args={}):
 
     # For each patient, run DeconRNASeq to get cell type frequencies, and save results to pandas df:
     print("Running DeconRNASeq...")
-    cell_freqs = pd.DataFrame()
-    cell_freqs['Cell_types'] = sig_df.columns
-    cell_freqs = cell_freqs.set_index(['Cell_types'])
+    cell_freqs_df = pd.DataFrame()
+    cell_freqs_df['Cell_types'] = sig_df.columns
+    cell_freqs_df = cell_freqs_df.set_index(['Cell_types'])
     for patient in patient_list:
         if patient in rna_df.columns:
             Mix = np.array(rna_df[patient])
-            cell_freqs[patient] = DeconRNASeq(Sig, Mix, formulation=formulation, reg_constant=reg_constant, print_results=print_results, label=patient)
+            cell_freqs_df[patient] = DeconRNASeq(Sig, Mix, formulation=formulation, reg_constant=reg_constant, print_results=print_results, label=patient)
         else:
             raise ValueError("patient_ID ({!r}) not present in rna dataframe".format(patient))
 
-    return cell_freqs
+    cell_freqs_df = cell_freqs_df.transpose()
+    return cell_freqs_df

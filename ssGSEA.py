@@ -117,4 +117,5 @@ def ssGSEA_main(rna_df, up_genes=None, patient_IDs='ALL', args={}):
         else:
             raise ValueError("patient_ID ({!r}) not present in rna dataframe".format(patient))
 
+    scores = scores.transpose()
     return scores
