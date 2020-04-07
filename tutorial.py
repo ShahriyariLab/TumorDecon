@@ -24,9 +24,11 @@ sig = td.read_lm22_file('data/LM22.txt')
 #    'scaling': how to scale the data (rna mixture & signature matrix) before applying DeconRNASeq (must be either 'None', 'zscore', or 'minmax')
 #    'scaling_axis': whether to scale data by normalizing each cell types / patient individually (0) or each gene individually (1). default is 0
 #    'nu','C','kernel': all arguments to be passed to sklearn's implementation of NuSVR. See sklearn documentation for details
-#       defaults are nu=0.5, C=1.0, kernel=linear
-ciber_freqs = td.tumor_deconvolve(rna, 'cibersort',  patient_IDs='ALL', cell_signatures=sig, args={'scaling':'minmax', 'scaling_axis':1})
+#       additionally, can pass in 'nu':'best' to choose the nu from {0.25, 0.5, 0.75 that minimizes the root mean square error}
+#       defaults are nu='best', C=1.0, kernel=linear
+ciber_freqs = td.tumor_deconvolve(rna, 'cibersort',  patient_IDs='ALL', cell_signatures=sig, args={'nu':'best', 'scaling':'minmax', 'scaling_axis':1})
 print(ciber_freqs)
+sys.exit()
 
 # Can visualize results with boxplots:
 # (Currently only works for frequencies generated for the 22 cell types in the LM22 signature matrix):

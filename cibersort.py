@@ -43,7 +43,7 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
         - args: dictionary containing any of the following:
             - scaling: string, must be either 'None', 'zscore', or 'minmax'. Determines how to scale the mixture data and signature matrix before applying CIBERSORT
             - scaling_axis: 0 or 1. Whether to scale mixture data and signature matrix by normalizing each column (patient/celltype) individually (scaling_axis=0) or each row (gene) individually (scaling_axis=1).
-            - nu: see sklearn's NuSVR
+            - nu: see sklearn's NuSVR. If nu='best', will use the nu in {0.25, 0.5, 0.75} that minimizes root mean square b/w data and prediction. If nu a float, will compute cibersort for that specific nu
             - C: see sklearn's NuSVR
             - kernel:: see sklearn's NuSVR
     Outputs:
@@ -80,6 +80,24 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
     else:
         scaling_axis = 0
 
+    if 'nu' in args.keys():
+        nu = args['nu']
+        if isinstance(nu, str):
+            if nu != 'best':
+                raise ValueError("nu ({!r}) must be either a float, or 'best'".format(nu))
+    else:
+        nu = 'best'
+
+    if 'C' in args.keys():
+        C = args['C']
+    else:
+        C = 1.0
+    if 'kernel' in args.keys():
+        kernel = args['kernel']
+    else:
+        kernel = 'linear'
+
+
     # eliminate genes not present in both rna and sig dfs, and ensure they list genes in the same order:
     rna_df, sig_df = keep_common_genes(rna_df, sig_df)
 
@@ -96,7 +114,21 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
     print("Running CiberSort...")
     for patient in patient_list:
         if patient in rna_df.columns:
-            cell_freqs_df[patient] = cibersort(rna_df[patient], sig_df)
+            if nu == 'best':
+                nus = [0.25, 0.5, 0.75]
+                best_nu = nus[0]
+                best_f = cibersort(rna_df[patient], sig_df, nu=best_nu, C=C, kernel=kernel)
+                best_rms = np.sqrt(np.mean((rna_df[patient] - sig_df.dot(best_f))**2.))
+                for i in range(1,len(nus)):
+                    f = cibersort(rna_df[patient], sig_df, nu=nus[i], C=C, kernel=kernel)
+                    rms = np.sqrt(np.mean((rna_df[patient] - sig_df.dot(best_f))**2.))
+                    if rms < best_rms:
+                        best_nu = nus[i]
+                        best_f = f
+                        best_rms = rms
+                cell_freqs_df[patient] = best_f
+            else:
+                cell_freqs_df[patient] = cibersort(rna_df[patient], sig_df, nu=nu, C=C, kernel=kernel)
         else:
             raise ValueError("patient_ID ({!r}) not present in rna dataframe".format(patient))
 
