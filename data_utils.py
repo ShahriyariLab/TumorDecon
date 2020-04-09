@@ -85,8 +85,6 @@ def df_normalization(df, scaling, axis=0):
     df_norm.index = df.index
     return df_norm
 
-# def read_custom_geneset():
-# columns are cell types, rows are lists of gene identifiers (hugo symbols)
 
 def keep_common_genes(rna_df, sig_df):
     """
@@ -220,6 +218,26 @@ def read_ssGSEA_up_genes(filepath='data/Gene_sets.csv'):
 
     return up_genes
 
+def read_custom_geneset(filepath):
+    """
+        Function to read in a custom csv file containing the up or down regulated
+            genes for each cell type
+        Inputs:
+            - path to correct csv file. File should have columns named for each cell type,
+            and rows should contain Hugo Symbols for genes to be considered as up (or down)
+            regulated for that cell type. If not all cell types have the same number of up(down)
+            regulated genes, excess rows in each column should be coded as "NaN"
+        Outputs:
+            - dictionary. Keys are the column names of the given csv file (cell types),
+                values are a list of up (down) regulated genes for that cell type
+    """
+    import pandas as pd
+    import numpy as np
+    gene_sets = pd.read_csv(filepath)
+    chosen_genes = {} # up or down genes
+    for cell in gene_sets.columns.unique():
+        chosen_genes[cell] = list(gene_sets[cell].dropna())
+    return chosen_genes
 
 # Trange Le
 def corr_table(methods, results, cell_types, true_freqs):
