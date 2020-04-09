@@ -67,6 +67,7 @@ def DeconRNASeq(S, m, formulation="qp", reg_constant=1.0, print_results=False, l
     """
     import scipy.optimize as opt
     import numpy as np
+    import warnings
 
     # Initialize frequencies with random numbers between 0 and 1:
     x0 = np.random.rand(S.shape[1])
@@ -97,6 +98,9 @@ def DeconRNASeq(S, m, formulation="qp", reg_constant=1.0, print_results=False, l
         print(label)
         print(soln)
         print()
+    else:
+        if soln['success'] == False:
+            warnings.warn("DeconRNASeq optimization did not terminate successfully. For more details: re-run with optional argument 'print_results:True'", category=UserWarning)
 
     xopt = soln['x']
 
@@ -213,4 +217,5 @@ def DeconRNASeq_main(rna_df, sig_df, patient_IDs='ALL', args={}):
             raise ValueError("patient_ID ({!r}) not present in rna dataframe".format(patient))
 
     cell_freqs_df = cell_freqs_df.transpose()
+
     return cell_freqs_df
