@@ -219,3 +219,78 @@ def read_ssGSEA_up_genes(filepath='data/Gene_sets.csv'):
         up_genes[cell] = gene_sets[gene_sets['Cell type'] == cell]['Symbol'].tolist()
 
     return up_genes
+
+
+# Trange Le
+def corr_table(methods, results, cell_types, true_freqs):
+    import pandas as pd
+    import numpy as np
+    from scipy.stats.stats import pearsonr
+    from scipy.stats import spearmanr
+
+    p_corr_per_cell = pd.DataFrame(index=cell_types, columns=methods)
+    p_corr_per_sample = pd.DataFrame(index=true_freqs.index, columns=methods)
+    s_corr_per_cell = pd.DataFrame(index=cell_types, columns=methods)
+    s_corr_per_sample = pd.DataFrame(index=true_freqs.index, columns=methods)
+    for method in methods:
+        for cell in cell_types:
+            p_corr_per_cell.loc[cell, method] = pearsonr(results[method][cell], true_freqs[cell])[0]
+            s_corr_per_cell.loc[cell, method] = spearmanr(results[method][cell], true_freqs[cell])[0]
+        for i in range(len(true_freqs)):
+            p_corr_per_sample.loc[true_freqs.index[i], method] = pearsonr(results[method][cell], true_freqs[cell])[0]
+            s_corr_per_sample.loc[true_freqs.index[i], method] = spearmanr(results[method][cell], true_freqs[cell])[0]
+    return np.abs(p_corr_per_cell), np.abs(p_corr_per_sample), np.abs(s_corr_per_cell), np.abs(s_corr_per_sample)
+
+
+
+# Trang Le
+def corr_mean_std(corr_per_cell, corr_per_sample):
+    import pandas as pd
+    import numpy as np
+
+    corr = pd.DataFrame(data=np.zeros((corr_per_cell.shape[1], 4)), index=corr_per_cell.columns, columns=['Mean_corr_per_sample', 'Std_corr_per_sample', 'Mean_corr_per_cell', 'Std_corr_per_cell'])
+    corr['Mean_corr_per_sample'] = np.mean(corr_per_sample, axis=0)
+    corr['Std_corr_per_sample'] = np.std(corr_per_sample, axis=0)
+    corr['Mean_corr_per_cell'] = np.mean(corr_per_cell, axis=0)
+    corr['Std_corr_per_cell'] = np.std(corr_per_cell, axis=0)
+    return corr
+
+
+
+# Trang Le
+def flatten_corr_per_cell(corr_per_cell):
+    import pandas as pd
+    import numpy as np
+
+    corr_per_cell2 = pd.DataFrame(data=np.zeros((corr_per_cell.shape[0]*corr_per_cell.shape[1], 3)), columns=['Method', 'Cell_type', 'Correlation'])
+    methods = []
+    for method in corr_per_cell.columns:
+        methods.extend([method]*corr_per_cell.shape[0])
+    corr_per_cell2['Method'] = methods
+    corr_per_cell2['Cell_type'] = list(corr_per_cell.index)*corr_per_cell.shape[1]
+    corr = []
+    for method in corr_per_cell.columns:
+        corr.extend(list(corr_per_cell[method]))
+    corr_per_cell2['Correlation'] = corr
+
+    return corr_per_cell2
+
+
+# Trang Le
+def predicted_truth_bycell(method, method_freqs, exp_freqs, cell_types):
+    import pandas as pd
+
+    df = pd.concat([method_freqs[cell_types], exp_freqs[cell_types]])
+    df['Method'] = [method]*exp_freqs.shape[0] + ['Ground truth']*exp_freqs.shape[0]
+    df = pd.DataFrame(data=np.zeros((exp_freqs.shape[0]*len(cell_types), 3)),
+                              columns=[method, 'Ground truth', 'Cell type'])
+    method_fractions, true_fractions, cell_list = [], [], []
+    for cell in cell_types:
+        method_fractions.extend(list(method_freqs[cell]))
+        true_fractions.extend(list(exp_freqs[cell]))
+        cell_list.extend([cell]*exp_freqs.shape[0])
+    df[method] = method_fractions
+    df['Ground truth'] = true_fractions
+    df['Cell type'] = cell_list
+
+    return df
