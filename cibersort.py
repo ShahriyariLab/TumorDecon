@@ -66,8 +66,8 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
 
     if 'scaling' in args.keys():
         scaling = args['scaling']
-        if scaling not in ['None', 'zscore', 'minmax']:
-            raise ValueError("scaling ({!r}) must be set to 'None', 'zscore' or 'minmax'".format(scaling))
+        if scaling not in ['None', 'none', 'zscore', 'minmax']:
+            raise ValueError("scaling ({!r}) must be set to 'none', 'zscore' or 'minmax'".format(scaling))
         else:
             scaling = args['scaling']
     else: # default
