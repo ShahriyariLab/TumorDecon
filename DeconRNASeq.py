@@ -157,10 +157,10 @@ def DeconRNASeq_main(rna_df, sig_df, patient_IDs='ALL', args={}):
         check_sig = False
     if 'scaling' in args.keys():
         scaling = args['scaling']
-        if scaling not in ['None', 'zscore', 'minmax']:
-            raise ValueError("scaling ({!r}) must be set to 'None', 'zscore' or 'minmax'".format(scaling))
+        if scaling not in ['None', 'none', 'zscore', 'minmax']:
+            raise ValueError("scaling ({!r}) must be set to 'none', 'zscore' or 'minmax'".format(scaling))
     else:
-        scaling = 'None'
+        scaling = 'none'
     if 'scaling_axis' in args.keys():
         scaling_axis = args['scaling_axis']
         if scaling_axis not in [0, 1]:
