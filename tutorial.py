@@ -5,9 +5,13 @@ import sys
 sys.path.insert(0,"..")
 
 import TumorDecon as td
+td_install_loc = td.get_td_Home()
 
 # read in colon cancer from TCGA Pancancer:
-rna = td.read_pancancer_rna_file('data/coadred_data_RNA_Seq_v2_expression_median.txt')
+# rna = td.read_pancancer_rna_file(td_install_loc+'data/coadred_data_RNA_Seq_v2_expression_median.txt')
+
+# OR: download from cbioportal:
+rna = td.download_from_cbio(url="http://download.cbioportal.org/coadread_tcga_pan_can_atlas_2018.tar.gz")
 
 # Drop any rows (genes) that contain a NaN value from rna expression data
 rna.dropna(axis=0, inplace=True)
@@ -17,7 +21,7 @@ rna.dropna(axis=0, inplace=True)
 #################################################################################
 # Frequency methods (cibersort and DeconRNASeq) require a signature matrix:
 # read in LM22 file as signature matrix
-sig = td.read_lm22_file('data/LM22.txt')
+sig = td.read_lm22_file(td_install_loc+'data/LM22.txt')
 
 # Run cibersort on ALL patients:
 # optional argments include:
@@ -28,7 +32,6 @@ sig = td.read_lm22_file('data/LM22.txt')
 #       defaults are nu='best', C=1.0, kernel=linear
 ciber_freqs = td.tumor_deconvolve(rna, 'cibersort',  patient_IDs='ALL', cell_signatures=sig, args={'nu':'best', 'scaling':'minmax', 'scaling_axis':1})
 print(ciber_freqs)
-sys.exit()
 
 # Can visualize results with boxplots:
 # (Currently only works for frequencies generated for the 22 cell types in the LM22 signature matrix):

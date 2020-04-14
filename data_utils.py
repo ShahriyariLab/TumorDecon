@@ -50,18 +50,19 @@ def download_from_cbio(url="http://download.cbioportal.org/uvm_tcga_pan_can_atla
     import os
 
     # Check if file already downloaded, if not, download it:
-    file = save_location+url.strip("http:/download.cbioportal.org/")
+    file = save_location+url.replace('http://download.cbioportal.org/','')
     if not os.path.exists(file):
         # Download file and save it locally:
         wget.download(url, save_location)
     # Unzip if applicable
-    if file.endswith("tar.gz") and not os.path.exists(file.strip(".tar.gz")):
+    folder = file.replace(".tar.gz","")
+    if file.endswith("tar.gz") and not os.path.exists(folder):
         tar = tarfile.open(file, "r:gz")
-        tar.extract("data_RNA_Seq_v2_expression_median.txt", path=file.strip(".tar.gz"))
+        tar.extract("data_RNA_Seq_v2_expression_median.txt", path=folder)
         # tar.extractall(folder.strip(".tar.gz"))
         tar.close()
     # Read in data:
-    return read_pancancer_rna_file(file.strip(".tar.gz")+"/data_RNA_Seq_v2_expression_median.txt")
+    return read_pancancer_rna_file(folder+"/data_RNA_Seq_v2_expression_median.txt")
 
 
 
