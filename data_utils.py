@@ -1,5 +1,10 @@
 # data_utils.py - functions for reading in pancancer datasets and manipulating data
 
+def get_td_Home():
+    import os
+    # Returns the path where this file is stored
+    return os.path.realpath(__file__).strip("data_utils.py")
+
 def read_pancancer_rna_file(rna_file_path, identifier='hugo'):
     """
     Read in a pancancer csv file containing mixture gene expression data, and return a pandas dataframe.
@@ -29,6 +34,34 @@ def read_pancancer_rna_file(rna_file_path, identifier='hugo'):
         raise ValueError("gene identifier must be set to 'hugo' or 'entrez'")
 
     return rna
+
+def download_from_cbio(url="http://download.cbioportal.org/uvm_tcga_pan_can_atlas_2018.tar.gz", save_location=get_td_Home()+"data/downloaded/", delete_after=False):
+    """
+    Function to download data directly from cbioportal and read it in.
+        Inputs:
+            - url: url to data
+            - save_loc: where to save the data. Default is in TumorDecon directory, under data/downloaded
+            - delete_after: not implemented yet. Whether to delete data after reading
+        Outputs:
+            - pandas df of mixture data
+    """
+    import wget
+    import tarfile
+    import os
+
+    # Check if file already downloaded, if not, download it:
+    file = save_location+url.strip("http:/download.cbioportal.org/")
+    if not os.path.exists(file):
+        # Download file and save it locally:
+        wget.download(url, save_location)
+    # Unzip if applicable
+    if file.endswith("tar.gz") and not os.path.exists(file.strip(".tar.gz")):
+        tar = tarfile.open(file, "r:gz")
+        tar.extract("data_RNA_Seq_v2_expression_median.txt", path=file.strip(".tar.gz"))
+        # tar.extractall(folder.strip(".tar.gz"))
+        tar.close()
+    # Read in data:
+    return read_pancancer_rna_file(file.strip(".tar.gz")+"/data_RNA_Seq_v2_expression_median.txt")
 
 
 
@@ -200,7 +233,7 @@ def variance_threshold_selector(data, threshold=0.5):
     return data_red.T
 
 
-def read_ssGSEA_up_genes(filepath='data/Gene_sets.csv'):
+def read_ssGSEA_up_genes(filepath=get_td_Home()+'data/Gene_sets.csv'):
     """
     Function to read in csv file containing the gene sets from the ssGSEA paper
     Inputs:
