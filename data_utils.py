@@ -42,6 +42,51 @@ def read_rna_file(rna_file_path, identifier='hugo'):
         raise ReadError("Data Format not recognized")
     return rna
 
+
+def download_by_name(source, type):
+    """
+    Function to download TCGA data from either UCSC Xena Hub or cBioPortal given
+    the desired source and cancer type, instead of a URL.
+        Inputs:
+            - source: either "xena" or "cbio"
+            - type: specific strings. Each will be presented as options in a dropdown menu in the GUI
+        Outputs:
+            - pandas df of mixture data
+    """
+    if source in ["xena", "Xena", "UCSC", "ucsc"]:
+        type_dict = {'Acute Myeloid Leukemia':'LAML','Adrenocortical Cancer':'ACC', 'Bile Duct Cancer':'CHOL', 'Bladder Cancer':'BLCA', 'Breast Cancer':'BRCA',
+                     'Cervical Cancer':'CESC', 'Colon and Rectal Cancer':'COADRED', 'Colon Cancer':'COAD', 'Endometrioid Cancer':'UCEC', 'Esophageal Cancer':'ESCA',
+                     'Glioblastoma':'GBM', 'Head and Neck Cancer':'HNSC', 'Kidney Chromophobe':'KICH', 'Kidney Clear Cell Carcinoma':'KIRC', 'Kidney Papillary Cell Carcinoma':'KIRP',
+                     'Large B-cell Lymphoma':'DLBC', 'Liver Cancer':'LIHC', 'Lower Grade Glioma':'LGG', 'Lower Grade Glioma and Glioblastoma':'GBMLGG', 'Lung Adenocarcinoma':'LUAD',
+                     'Lung Cancer':'LUNG', 'Lung Squamous Cell Carcinoma':'LUSC', 'Melanoma':'SKCM', 'Mesothelioma':'MESO', 'Ocular Melanomas':'UVM', 'Ovarian Cancer':'OV',
+                     'Pancreatic Cancer':'PAAD', 'Pheochromocytoma and Paraganglioma':'PCPG', 'Prostate Cancer':'PRAD', 'Rectal Cancer':'READ', 'Sarcoma':'SARC', 'Stomach Cancer':'STAD',
+                     'Testicular Cancer':'TGCT', 'Thymoma':'THYM', 'Thyroid Cancer':'THCA', 'Uterine Carcinosarcoma':'UCS'}
+        if type in type_dict.keys():
+            urlcode = type_dict[type]
+        else:
+            raise ValueError("type {!r} not available from UCSC Xena".format(type))
+        # Download and return:
+        data = download_from_xena(url="https://tcga.xenahubs.net/download/TCGA."+urlcode+".sampleMap/HiSeqV2.gz")
+        return data
+    elif source in ["cbio", "CbioPortal", "cbioportal"]:
+        type_dict = {'Acute Myeloid Leukemia':'laml','Adrenocortical Carcinoma':'acc', 'Bladder Urothelial Carcinoma':'blca', 'Brain Lower Grade Glioma':'lgg', 'Breast Invasive Carcinoma':'brca',
+                     'Cervical Squamous Cell Carcinoma':'cesc', 'Cholangiocarcinoma':'chol', 'Colorectal Adenocarcinoma':'coadred', 'Diffuse Large B-Cell Lymphoma':'dlbc', 'Esophageal Adenocarcinoma':'esca',
+                     'Glioblastoma Multiforme':'gbm', 'Head and Neck Squamous Cell Carcinoma':'hnsc', 'Kidney Chromophobe':'kich', 'Kidney Renal Clear Cell Carcinoma':'kirc', 'Kidney Renal Papillary Cell Carcinoma':'kirp',
+                     'Liver Hepatocellular Carcinoma':'lihc', 'Lung Adenocarcinoma':'luad', 'Lung Squamous Cell Carcinoma':'lusc', 'Mesothelioma':'meso', 'Ovarian Serous Cystadenocarcinoma':'ov', 'Pancreatic Adenocarcinoma':'paad',
+                     'Pheochromocytoma and Paraganglioma':'pcpg', 'Prostate Adenocarcinoma':'prad', 'Sarcoma':'sarc', 'Skin Cutaneous Melanoma':'skcm', 'Stomach Adenocarcinoma':'stad', 'Testicular Germ Cell Tumors':'tgct',
+                     'Thymoma':'thym', 'Thyroid Carcinoma':'thca', 'Uterine Carcinosarcoma':'ucs', 'Uterine Corpus Endometrial Carcinoma':'ucec', 'Uveal Melanoma':'uvm'}
+        if type in type_dict.keys():
+            urlcode = type_dict[type]
+        else:
+            raise ValueError("type {!r} not available from CbioPortal".format(type))
+        # Download and return:
+        data = download_from_cbio(url="http://download.cbioportal.org/"+urlcode+"_tcga_pan_can_atlas_2018.tar.gz")
+        return data
+    else:
+        raise ValueError("source ({!r}) must be 'xena' or 'cbioportal'".format(source))
+
+
+
 def download_from_cbio(url="http://download.cbioportal.org/uvm_tcga_pan_can_atlas_2018.tar.gz", save_location=get_td_Home()+"data/downloaded/", delete_after=False):
     """
     Function to download data directly from cbioportal and read it in as a pandas df.
