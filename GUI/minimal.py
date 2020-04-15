@@ -4,7 +4,6 @@
     # (won't need once package properly installed in a location included in python's path)
 import sys
 sys.path.insert(0,'../../')
-# Path to gene set is also hardcoded into this program as "../../TumorDecon/data/Gene_sets.csv"
 
 # Import packages
 import TumorDecon as td
@@ -212,7 +211,7 @@ def run_tumor_decon():
 
     else: # ssgsea, singscore
         if u.get() == "ssGSEA paper gene set":
-            up_genes = td.read_ssGSEA_up_genes("../../TumorDecon/data/Gene_sets.csv")
+            up_genes = td.read_ssGSEA_up_genes(td.get_td_Home()+"data/Gene_sets.csv")
         else:
             up_genes = td.read_custom_geneset(path_to_up_genes)
         if method == 'ssgsea':
