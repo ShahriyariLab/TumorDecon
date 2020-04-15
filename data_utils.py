@@ -5,9 +5,9 @@ def get_td_Home():
     # Returns the path where this file is stored
     return os.path.realpath(__file__).strip("data_utils.py")
 
-def read_pancancer_rna_file(rna_file_path, identifier='hugo'):
+def read_rna_file(rna_file_path, identifier='hugo'):
     """
-    Read in a pancancer csv file containing mixture gene expression data, and return a pandas dataframe.
+    Read in a cbioportal pancancer or TCGA Xena Hug txt file containing mixture gene expression data, and return a pandas dataframe.
     Columns are patients, Rows are genes
     Inputs:
         - rna_file_path: string. Relative or full path to the RNA seq file
@@ -24,20 +24,27 @@ def read_pancancer_rna_file(rna_file_path, identifier='hugo'):
     import pandas as pd
 
     rna = pd.read_csv(rna_file_path,  sep='\t')
-    rna[['Hugo_Symbol', 'Entrez_Gene_Id']] = rna[['Hugo_Symbol', 'Entrez_Gene_Id']].astype(str)
 
-    if identifier == 'hugo':
-        rna = rna.set_index(['Hugo_Symbol']).drop(['Entrez_Gene_Id'], axis=1)
-    elif identifier == 'entrez':
-        rna = rna.set_index(['Entrez_Gene_Id']).drop(['Hugo_Symbol'], axis=1)
+    # Xena Hub:
+    if "sample" in rna.columns:
+        rna['Hugo_Symbol'] = rna['sample'].astype(str)
+        rna = rna.set_index(['Hugo_Symbol']).drop(['sample'], axis=1)
+    # CbioPortal TCGA Pan Cancer Atlas:
+    elif "Hugo_Symbol" in rna.columns:
+        rna[['Hugo_Symbol', 'Entrez_Gene_Id']] = rna[['Hugo_Symbol', 'Entrez_Gene_Id']].astype(str)
+        if identifier == 'hugo':
+            rna = rna.set_index(['Hugo_Symbol']).drop(['Entrez_Gene_Id'], axis=1)
+        elif identifier == 'entrez':
+            rna = rna.set_index(['Entrez_Gene_Id']).drop(['Hugo_Symbol'], axis=1)
+        else:
+            raise ValueError("gene identifier must be set to 'hugo' or 'entrez'")
     else:
-        raise ValueError("gene identifier must be set to 'hugo' or 'entrez'")
-
+        raise ReadError("Data Format not recognized")
     return rna
 
 def download_from_cbio(url="http://download.cbioportal.org/uvm_tcga_pan_can_atlas_2018.tar.gz", save_location=get_td_Home()+"data/downloaded/", delete_after=False):
     """
-    Function to download data directly from cbioportal and read it in.
+    Function to download data directly from cbioportal and read it in as a pandas df.
         Inputs:
             - url: url to data
             - save_loc: where to save the data. Default is in TumorDecon directory, under data/downloaded
@@ -53,6 +60,7 @@ def download_from_cbio(url="http://download.cbioportal.org/uvm_tcga_pan_can_atla
     file = save_location+url.replace('http://download.cbioportal.org/','')
     if not os.path.exists(file):
         # Download file and save it locally:
+        print("Downloading data from cbioportal...")
         wget.download(url, save_location)
     # Unzip if applicable
     folder = file.replace(".tar.gz","")
@@ -62,8 +70,34 @@ def download_from_cbio(url="http://download.cbioportal.org/uvm_tcga_pan_can_atla
         # tar.extractall(folder.strip(".tar.gz"))
         tar.close()
     # Read in data:
-    return read_pancancer_rna_file(folder+"/data_RNA_Seq_v2_expression_median.txt")
+    return read_rna_file(folder+"/data_RNA_Seq_v2_expression_median.txt")
 
+
+def download_from_xena(url="https://tcga.xenahubs.net/download/TCGA.UCS.sampleMap/HiSeqV2.gz", save_location=get_td_Home()+"data/downloaded/", delete_after=False):
+    """
+    Function to download data directly from TCGA Xena Hub and read it in as a pandas df.
+        Inputs:
+            - url: url to data
+            - save_loc: where to save the data. Default is in TumorDecon directory, under data/downloaded
+            - delete_after: not implemented yet. Whether to delete data after reading
+        Outputs:
+            - pandas df of mixture data
+    """
+    import wget
+    import gzip
+    import os
+
+    # Since all cancer types have the same filename, re-download every timeC
+    zipfile = save_location+url.split('/')[-1]
+    # Download file and save it locally:
+    print("Downloading data from Xena Hub...")
+    wget.download(url, save_location)
+    # pandas read_csv can handle the zipped file - no need to unzip
+    # Read in data:
+    logdf = read_rna_file(zipfile)
+    # Transform from log2(x+1):
+    df = 2.**logdf - 1
+    return df
 
 
 def read_lm22_file(lm22_file_path):
