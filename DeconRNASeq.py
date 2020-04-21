@@ -161,7 +161,7 @@ def DeconRNASeq_main(rna_df, sig_df, patient_IDs='ALL', args={}):
         check_sig = False
     if 'scaling' in args.keys():
         scaling = args['scaling']
-        if scaling not in ['None', 'none', 'zscore', 'minmax']:
+        if scaling not in ['None', 'none', 'zscore', 'minmax', 'r-zscore']:
             raise ValueError("scaling ({!r}) must be set to 'none', 'zscore' or 'minmax'".format(scaling))
     else:
         scaling = 'none'
@@ -183,7 +183,7 @@ def DeconRNASeq_main(rna_df, sig_df, patient_IDs='ALL', args={}):
     rna_df, sig_df = keep_common_genes(rna_df, sig_df)
 
     # Scale Data:
-    if scaling in ['zscore', 'minmax']:
+    if scaling in ['zscore', 'minmax', 'r-zscore']:
         # R implementation uses zscore scaling.
         sig_df = df_normalization(sig_df, scaling=scaling, axis=scaling_axis)
         rna_df = df_normalization(rna_df, scaling=scaling, axis=scaling_axis)

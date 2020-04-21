@@ -22,6 +22,8 @@ def cibersort(rna_sample, sig_df, nu=0.5, C=1.0, kernel='linear'):
     # Replace negative "frequencies" with 0:
     weights = np.array(clf.coef_)[0]
     weights[weights<0] = 0
+    # Sum to 1 contraint:
+    weights = weights / np.sum(weights)
 
     return weights
 
@@ -66,7 +68,7 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
 
     if 'scaling' in args.keys():
         scaling = args['scaling']
-        if scaling not in ['None', 'none', 'zscore', 'minmax']:
+        if scaling not in ['None', 'none', 'zscore', 'minmax', 'r-zscore']:
             raise ValueError("scaling ({!r}) must be set to 'none', 'zscore' or 'minmax'".format(scaling))
         else:
             scaling = args['scaling']
@@ -102,7 +104,7 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
     rna_df, sig_df = keep_common_genes(rna_df, sig_df)
 
     # Scale data:
-    if scaling in ['zscore', 'minmax']:
+    if scaling in ['zscore', 'minmax', 'r-zscore']:
         sig_df = df_normalization(sig_df, scaling=scaling, axis=scaling_axis)
         rna_df = df_normalization(rna_df, scaling=scaling, axis=scaling_axis)
 
@@ -121,7 +123,7 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
                 best_rms = np.sqrt(np.mean((rna_df[patient] - sig_df.dot(best_f))**2.))
                 for i in range(1,len(nus)):
                     f = cibersort(rna_df[patient], sig_df, nu=nus[i], C=C, kernel=kernel)
-                    rms = np.sqrt(np.mean((rna_df[patient] - sig_df.dot(best_f))**2.))
+                    rms = np.sqrt(np.mean((rna_df[patient] - sig_df.dot(f))**2.))
                     if rms < best_rms:
                         best_nu = nus[i]
                         best_f = f

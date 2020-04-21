@@ -178,9 +178,16 @@ def df_normalization(df, scaling, axis=0):
         - df_norm: normalized (minmax) data
     """
     import pandas as pd
+    import numpy as np
     from sklearn import preprocessing
     if scaling == "zscore":
         df_norm = preprocessing.scale(df, axis=axis)
+        df_norm = pd.DataFrame(df_norm)
+    elif scaling == "r-zscore":
+        # uses delta degrees of freedom = 1 (as R std does), instead of 0 (as sklearn does)
+        mean = np.mean(df, axis=axis)
+        std = np.std(df, axis=axis, ddof=1)
+        df_norm = (df - mean) / std
         df_norm = pd.DataFrame(df_norm)
     elif scaling == "minmax":
         min_max_scaler = preprocessing.MinMaxScaler()
