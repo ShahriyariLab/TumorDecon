@@ -145,7 +145,7 @@ def download_from_xena(url="https://tcga.xenahubs.net/download/TCGA.UCS.sampleMa
     return df
 
 
-def read_lm22_file(lm22_file_path):
+def read_lm22_file(lm22_file_path=get_td_Home()+"data/LM22.txt"):
     """
     Read in the LM22 signature matrix file (containing signature gene expression data for 22 different cell types)
     and return a pandas dataframe
