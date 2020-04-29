@@ -89,7 +89,7 @@ def ssGSEA_main(rna_df, up_genes=None, patient_IDs='ALL', args={}):
     if 'print_progress' in args.keys():
             print_progress = args['print_progress']
     else:
-        print_progress = True
+        print_progress = False
 
 
     # Check if up_genes argument was passed in:
