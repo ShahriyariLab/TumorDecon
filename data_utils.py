@@ -34,12 +34,25 @@ def read_rna_file(rna_file_path, identifier='hugo'):
         rna[['Hugo_Symbol', 'Entrez_Gene_Id']] = rna[['Hugo_Symbol', 'Entrez_Gene_Id']].astype(str)
         if identifier == 'hugo':
             rna = rna.set_index(['Hugo_Symbol']).drop(['Entrez_Gene_Id'], axis=1)
+            # Remove rows/genes that don't have a Hugo Symbol name:
+            rna = rna.drop('nan')
         elif identifier == 'entrez':
             rna = rna.set_index(['Entrez_Gene_Id']).drop(['Hugo_Symbol'], axis=1)
+            # Remove rows/genes that don't have a Entrez ID:
+            rna = rna.drop('nan')
         else:
             raise ValueError("gene identifier must be set to 'hugo' or 'entrez'")
     else:
         raise ReadError("Data Format not recognized")
+
+    # Drop duplicate genes:
+    # remove duplicates:
+    # rna = rna.loc[~rna.index.duplicated(keep='first')] # argument keep = first, last, max, mean
+
+    # Drop NA (if any):
+    rna.dropna(axis=0, how='any', inplace=True)
+    rna.dropna(axis=1, how='any', inplace=True)
+
     return rna
 
 
@@ -316,7 +329,6 @@ def variance_threshold_selector(data, threshold=0.5):
     # Apply transformation to df:
     data_red = data[data.columns[selector.get_support(indices=True)]]
     # Transpose back so genes are rows again:
-
     return data_red.T
 
 
