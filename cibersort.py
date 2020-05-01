@@ -110,8 +110,8 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
 
     # For each patient, run cibersort to get cell type frequencies, and save results to pandas df:
     cell_freqs_df = pd.DataFrame(columns = patient_list)
-    cell_freqs_df['Cell_types'] = sig_df.columns
-    cell_freqs_df = cell_freqs_df.set_index(['Cell_types'])
+    cell_freqs_df['Patient_ID'] = sig_df.columns
+    cell_freqs_df = cell_freqs_df.set_index(['Patient_ID'])
 
     print("Running CiberSort...")
     for patient in patient_list:

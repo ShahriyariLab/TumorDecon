@@ -59,6 +59,6 @@ def SingScore_main(rna_df, up_genes=None, down_genes=None, patient_IDs='ALL', ar
             score = singscore.score(up_gene=up_genes[cell_type], down_gene=up_genes[cell_type], sample=sample_df)
         score.rename(columns={'total_score': cell_type}, inplace=True)
         scores = pd.concat([scores, score], axis=1)
-
-    # scores = scores.transpose()
+    scores.index.name='Patient_ID'
+    
     return scores

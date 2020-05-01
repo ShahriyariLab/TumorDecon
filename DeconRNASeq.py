@@ -207,8 +207,8 @@ def DeconRNASeq_main(rna_df, sig_df, patient_IDs='ALL', args={}):
     # For each patient, run DeconRNASeq to get cell type frequencies, and save results to pandas df:
     print("Running DeconRNASeq...")
     cell_freqs_df = pd.DataFrame()
-    cell_freqs_df['Cell_types'] = sig_df.columns
-    cell_freqs_df = cell_freqs_df.set_index(['Cell_types'])
+    cell_freqs_df['Patient_ID'] = sig_df.columns
+    cell_freqs_df = cell_freqs_df.set_index(['Patient_ID'])
     for patient in patient_list:
         if patient in rna_df.columns:
             Mix = np.array(rna_df[patient])
