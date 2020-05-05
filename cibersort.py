@@ -16,11 +16,18 @@ def cibersort(rna_sample, sig_df, nu=0.5, C=1.0, kernel='linear'):
     """
     from sklearn.svm import NuSVR
     import numpy as np
+    from sklearn.model_selection import GridSearchCV
+
+    # If a numerical of nu not explicitly specified, use gridsearch to find the best nu:
+    if nu == 'best':
+        gridsearch = GridSearchCV(NuSVR(C=C, kernel=kernel, max_iter=-1), cv=5, param_grid={"nu": [0.25, 0.5, 0.75]}, scoring='neg_mean_squared_error', refit=True, iid=False)
+        gridsearch.fit(sig_df, rna_sample)
+        nu = gridsearch.best_params_['nu']
 
     clf = NuSVR(nu=nu, C=C, kernel=kernel, max_iter=-1)
     clf.fit(sig_df, rna_sample)
     # Replace negative "frequencies" with 0:
-    weights = np.array(clf.coef_)[0]
+    weights = np.array(clf.coef_)[0] # equivalent to np.matmul(np.array(clf.dual_coef_), np.array(clf.support_vectors_))[0]
     weights[weights<0] = 0
     # Sum to 1 contraint:
     weights = weights / np.sum(weights)
@@ -116,21 +123,7 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
     print("Running CiberSort...")
     for patient in patient_list:
         if patient in rna_df.columns:
-            if nu == 'best':
-                nus = [0.25, 0.5, 0.75]
-                best_nu = nus[0]
-                best_f = cibersort(rna_df[patient], sig_df, nu=best_nu, C=C, kernel=kernel)
-                best_rms = np.sqrt(np.mean((rna_df[patient] - sig_df.dot(best_f))**2.))
-                for i in range(1,len(nus)):
-                    f = cibersort(rna_df[patient], sig_df, nu=nus[i], C=C, kernel=kernel)
-                    rms = np.sqrt(np.mean((rna_df[patient] - sig_df.dot(f))**2.))
-                    if rms < best_rms:
-                        best_nu = nus[i]
-                        best_f = f
-                        best_rms = rms
-                cell_freqs_df[patient] = best_f
-            else:
-                cell_freqs_df[patient] = cibersort(rna_df[patient], sig_df, nu=nu, C=C, kernel=kernel)
+            cell_freqs_df[patient] = cibersort(rna_df[patient], sig_df, nu=nu, C=C, kernel=kernel)
         else:
             raise ValueError("patient_ID ({!r}) not present in rna dataframe".format(patient))
 
