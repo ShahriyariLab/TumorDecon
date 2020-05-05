@@ -1,6 +1,6 @@
 # cibersort.py
 
-def cibersort(rna_sample, sig_df, nu=0.5, C=1.0, kernel='linear'):
+def cibersort(rna_sample, sig_df, nu=0.5, C=1.0, kernel='linear', shrinking=True):
     """
     Uses NuSVR from sklearn to solve for the cell type frequencies
     Inputs:
@@ -9,7 +9,8 @@ def cibersort(rna_sample, sig_df, nu=0.5, C=1.0, kernel='linear'):
             Rows are genes (indexed by 'Hugo_Symbol') and columns are cell types
         - nu: see sklearn's NuSVR
         - C: see sklearn's NuSVR
-        - kernel:: see sklearn's NuSVR
+        - kernel: see sklearn's NuSVR
+        - shrinking: see sklearn's NuSVR
     Outputs:
         - weights: NuSVR solution vector for the given sample.
             (Negative values in the solution vector are set to 0 for interpretation as cell type frequencies)
@@ -20,12 +21,14 @@ def cibersort(rna_sample, sig_df, nu=0.5, C=1.0, kernel='linear'):
 
     # If a numerical of nu not explicitly specified, use gridsearch to find the best nu:
     if nu == 'best':
-        gridsearch = GridSearchCV(NuSVR(C=C, kernel=kernel, max_iter=-1), cv=5, param_grid={"nu": [0.25, 0.5, 0.75]}, scoring='neg_mean_squared_error', refit=True, iid=False)
+        gridsearch = GridSearchCV(NuSVR(C=C, kernel=kernel, max_iter=-1, shrinking=shrinking), cv=5, param_grid={"nu": [0.25, 0.5, 0.75]}, scoring='neg_mean_squared_error', refit=True, iid=False)
         gridsearch.fit(sig_df, rna_sample)
         nu = gridsearch.best_params_['nu']
 
-    clf = NuSVR(nu=nu, C=C, kernel=kernel, max_iter=-1)
+    # Fit nuSVR with best (or specified) value of nu:
+    clf = NuSVR(nu=nu, C=C, kernel=kernel, max_iter=-1, shrinking=shrinking, tol=1e-3)
     clf.fit(sig_df, rna_sample)
+
     # Replace negative "frequencies" with 0:
     weights = np.array(clf.coef_)[0] # equivalent to np.matmul(np.array(clf.dual_coef_), np.array(clf.support_vectors_))[0]
     weights[weights<0] = 0
@@ -55,6 +58,7 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
             - nu: see sklearn's NuSVR. If nu='best', will use the nu in {0.25, 0.5, 0.75} that minimizes root mean square b/w data and prediction. If nu a float, will compute cibersort for that specific nu
             - C: see sklearn's NuSVR
             - kernel:: see sklearn's NuSVR
+            - shrinking: see sklearn's NuSVR
     Outputs:
         - cell_freqs: pandas df. Contains cell type frequencies for each patient in 'patient_IDs' list.
             Rows are indexed by cell type, columns are patient IDs
@@ -105,7 +109,10 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
         kernel = args['kernel']
     else:
         kernel = 'linear'
-
+    if 'shrinking' in args.keys():
+        shrinking = args['shrinking']
+    else:
+        shrinking = True
 
     # eliminate genes not present in both rna and sig dfs, and ensure they list genes in the same order:
     rna_df, sig_df = keep_common_genes(rna_df, sig_df)
@@ -123,9 +130,9 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
     print("Running CiberSort...")
     for patient in patient_list:
         if patient in rna_df.columns:
-            cell_freqs_df[patient] = cibersort(rna_df[patient], sig_df, nu=nu, C=C, kernel=kernel)
+            cell_freqs_df[patient] = cibersort(rna_df[patient], sig_df, nu=nu, C=C, kernel=kernel, shrinking=shrinking)
         else:
             raise ValueError("patient_ID ({!r}) not present in rna dataframe".format(patient))
-
+            return
     cell_freqs_df = cell_freqs_df.transpose()
     return cell_freqs_df
