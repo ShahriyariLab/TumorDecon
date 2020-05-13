@@ -145,8 +145,10 @@ def download_from_xena(url="https://tcga.xenahubs.net/download/TCGA.UCS.sampleMa
     import gzip
     import os
 
-    # Since all cancer types have the same filename, re-download every timeC
+    # Since all cancer types have the same filename, re-download every time:
     zipfile = save_location+url.split('/')[-1]
+    if os.path.exists(zipfile):
+        os.remove(zipfile)
     # Download file and save it locally:
     print("Downloading data from Xena Hub...")
     wget.download(url, save_location)
