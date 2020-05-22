@@ -1,13 +1,13 @@
 # ssGSEA.py
 
-def ssGSEA(mix_data, up_genes, alpha=1, print_progress=True):
+def ssGSEA(mix_data, up_genes, alpha=1.0, ties_method="average"):
     """
     Performs ssGSEA on a single sample for a single cell type and returns the enrichment score
     Inputs:
         - mix_data: Series of mixture RNA gene expression values, indexed on gene Hugo_Symbol, for a single patient
         - up_genes: a list of hugo identifiers referencing the up-regulated gene set to use to calculate enrichment score
         - alpha: Weight used in ssGSEA method
-        - print_progress: whether to print patient ID as ssGSEA iterates through
+        - ties_method: see pandas.DataFrame.rank(). How to treat ties
     Output:
         - ssGSEA enrichment Score (float)
     """
@@ -18,7 +18,7 @@ def ssGSEA(mix_data, up_genes, alpha=1, print_progress=True):
     mix_orig = mix_data.copy()#.reset_index(inplace=False)
 
     # Sort mixture data in descending order:
-    mix_data = mix_data.rank(axis=0, method="first").astype('int64') #, method='first', ascending=False)
+    mix_data = mix_data.rank(axis=0, method=ties_method).astype('int64') #, method='first', ascending=False)
     mix_data = mix_data.sort_values(ascending = False)
 
     # Sum all genes present in up_genes (signature):
@@ -66,7 +66,10 @@ def ssGSEA_main(rna_df, up_genes=None, patient_IDs='ALL', args={}):
             Alternatively, can use the string 'ALL' to run for all patients
         - args: dictionary containing any of the following:
             - alpha: see ssGSEA()
-            - print_progress: see ssGSEA()
+            - ties_method: see ssGSEA()
+            - print_progress: whether to print patient ID as ssGSEA iterates through
+            - norm: whether or not to normalize enrichment scores by using the entire data set, as indicated
+                by Barbie et al., 2009, online methods, pg. 2
     Outputs:
         - scores: pandas df. Contains ssGSEA enrichment scores for each cell type declared in 'up_genes'
             dictionary, for each patient in 'patient_IDs' list.
@@ -92,10 +95,18 @@ def ssGSEA_main(rna_df, up_genes=None, patient_IDs='ALL', args={}):
         alpha = args['alpha']
     else:
         alpha = 1.0
+    if 'ties_method' in args.keys():
+        ties_method = args['ties_method']
+    else:
+        ties_method = 'average'
     if 'print_progress' in args.keys():
-            print_progress = args['print_progress']
+        print_progress = args['print_progress']
     else:
         print_progress = False
+    if 'norm' in args.keys():
+        norm = args['norm']
+    else:
+        norm = False
 
 
     # Check if up_genes argument was passed in:
@@ -117,11 +128,15 @@ def ssGSEA_main(rna_df, up_genes=None, patient_IDs='ALL', args={}):
                 print(patient)
             patient_scores = [].copy()
             for cell_type in up_genes:
-                score = ssGSEA(rna_df[patient], up_genes[cell_type], alpha=alpha)
+                score = ssGSEA(rna_df[patient], up_genes[cell_type], alpha=alpha, ties_method=ties_method)
                 patient_scores.append(score)
             scores[patient] = patient_scores
         else:
             raise ValueError("patient_ID ({!r}) not present in rna dataframe".format(patient))
+
+    if norm:
+        range = np.max(np.array(scores)) - np.min(np.array(scores))
+        scores = scores / range
 
     scores = scores.transpose()
     return scores
