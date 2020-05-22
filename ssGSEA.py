@@ -15,20 +15,18 @@ def ssGSEA(mix_data, up_genes, alpha=1, print_progress=True):
     import pandas as pd
     import numpy as np
 
+    mix_orig = mix_data.copy()#.reset_index(inplace=False)
 
     # Sort mixture data in descending order:
-    mix_data = mix_data.rank(axis=0)#.astype('int64') #, method='first', ascending=False)
-    mix_data = mix_data.sort_values(ascending = False) # [:sig_size]
+    mix_data = mix_data.rank(axis=0, method="first").astype('int64') #, method='first', ascending=False)
+    mix_data = mix_data.sort_values(ascending = False)
 
-    # Calculate denominator for P_G using only genes in BOTH mix data and up_genes
-    mix_sig_sum = np.sum(np.power(np.abs(mix_data.loc[mix_data.index.intersection(up_genes)]), alpha))
     # Sum all genes present in up_genes (signature):
     sm = 0
     # Count number of genes encountered that are not present in up_genes (signature)
     not_count = 0
-    # Calculate denominator for P_NG
-    N_N_G_diff = len(mix_data) - len(up_genes)
 
+    # Iterate through and compute cumulative sums:
     P_G = []
     P_NG = []
     for i, val in enumerate(mix_data):
@@ -36,9 +34,17 @@ def ssGSEA(mix_data, up_genes, alpha=1, print_progress=True):
         if gene in up_genes:
             sm += pow(np.abs(val), alpha)
         else:
-            not_count +=1
-        P_G.append(sm/mix_sig_sum)
-        P_NG.append(not_count/N_N_G_diff)
+            not_count += 1.
+
+        P_G.append(sm)
+        P_NG.append(not_count)
+
+    # Calculate denominator for P_G using only genes in BOTH mix data and up_genes
+    mix_sig_sum = np.sum(np.power(np.abs(mix_data.loc[mix_data.index.intersection(up_genes)]), alpha))
+
+    P_G = np.array(P_G) / mix_sig_sum
+    P_NG = np.array(P_NG) / not_count # denominator N_N_G_diff
+
     rank_diff = np.subtract(P_G, P_NG)
     rank = np.sum(rank_diff)
     return rank
