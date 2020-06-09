@@ -1,10 +1,10 @@
 import setuptools
 
-with open("README.md", "r") as fh:
+with open("TumorDecon/README.md", "r") as fh:
     readme = fh.read()
 
 setuptools.setup(
-    name="TumorDecon-raronow", # Replace with your own username
+    name="TumorDecon-raronow",
     version="0.0.1",
     author="ShahriyariLab",
     description="Deconvolution Methods for Digital Cytometry",
@@ -14,8 +14,10 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License"
+        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
+    license='LICENSE',
+    include_package_data=True
 )
