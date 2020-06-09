@@ -1,12 +1,13 @@
 import setuptools
 
-with open("TumorDecon/README.md", "r") as fh:
+with open("README.md", "r") as fh:
     readme = fh.read()
 
 setuptools.setup(
-    name="TumorDecon-raronow",
-    version="0.0.1",
+    name="TumorDecon",
+    version="0.0.3",
     author="ShahriyariLab",
+    author_email="lshahriyari@umass.edu",
     description="Deconvolution Methods for Digital Cytometry",
     long_description=readme,
     long_description_content_type="text/markdown",
@@ -18,6 +19,19 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    license='LICENSE',
-    include_package_data=True
+    license="MIT License",
+    include_package_data=True,
+    dependency_links=["git+https://github.com/kristyhoran/singscore"],
+    install_requires=[
+        "scikit-learn>0.20.3",
+        "numpy>1.18.2",
+        "pandas>1.0.3",
+        "matplotlib>2.2.2",
+        "scipy>1.2.1",
+        "requests>2.22.0",
+        "beautifulsoup4>4.6.0",
+        "multiprocess>=0.70.9",
+        "seaborn>0.10.0",
+        "wget>=3.2"
+    ]
 )
