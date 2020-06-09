@@ -22,6 +22,7 @@ def read_rna_file(rna_file_path, identifier='hugo'):
     """
 
     import pandas as pd
+    from TumorDecon.hugoify import hugo
 
     rna = pd.read_csv(rna_file_path,  sep='\t')
 
@@ -33,6 +34,7 @@ def read_rna_file(rna_file_path, identifier='hugo'):
     elif "Hugo_Symbol" in rna.columns:
         rna[['Hugo_Symbol', 'Entrez_Gene_Id']] = rna[['Hugo_Symbol', 'Entrez_Gene_Id']].astype(str)
         if identifier == 'hugo':
+            rna = hugo(rna)
             rna = rna.set_index(['Hugo_Symbol']).drop(['Entrez_Gene_Id'], axis=1)
             # Remove rows/genes that don't have a Hugo Symbol name:
             rna = rna.drop('nan')

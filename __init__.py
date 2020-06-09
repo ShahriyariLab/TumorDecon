@@ -7,3 +7,4 @@ from .ssGSEA import *
 from .SingScore import *
 from .tumor_deconvolve import tumor_deconvolve
 from .visualization import *
+from .hugoify import *
