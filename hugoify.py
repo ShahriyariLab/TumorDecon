@@ -20,7 +20,7 @@ class Hugoify:
         else:
             raise Exception("Must be a DataFrame object or a path to an excel file")
     def get_missing_ids(self):
-        ## First adgument: Make function that inputs a enterez id and spits out a hugo id
+        ## First argument: Make function that inputs a enterez id and spits out a hugo id
         ## Second argument: Make a list of all of the missing
         missing = []
         values = self.df.values
