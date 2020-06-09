@@ -53,6 +53,7 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
         - patient_IDs: list of patient IDs to run cibersort for.
             Alternatively, can use the string 'ALL' to run for all patients
         - args: dictionary containing any of the following:
+            - print_progress: whether to print patient ID as cibersort iterates through
             - scaling: string, must be either 'None', 'zscore', or 'minmax'. Determines how to scale the mixture data and signature matrix before applying CIBERSORT
             - scaling_axis: 0 or 1. Whether to scale mixture data and signature matrix by normalizing each column (patient/celltype) individually (scaling_axis=0) or each row (gene) individually (scaling_axis=1).
             - nu: see sklearn's NuSVR. If nu='best', will use the nu in {0.25, 0.5, 0.75} that minimizes root mean square b/w data and prediction. If nu a float, will compute cibersort for that specific nu
@@ -76,6 +77,11 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
         raise ValueError("patient_IDs should be either 'ALL', or an array of IDs (not a single ID)")
     else:
         patient_list = patient_IDs
+
+    if 'print_progress' in args.keys():
+        print_progress = args['print_progress']
+    else:
+        print_progress = False
 
     if 'scaling' in args.keys():
         scaling = args['scaling']
@@ -130,6 +136,8 @@ def cibersort_main(rna_df, sig_df, patient_IDs='ALL', args={}):
     print("Running CiberSort...")
     for patient in patient_list:
         if patient in rna_df.columns:
+            if print_progress:
+                print(patient)
             cell_freqs_df[patient] = cibersort(rna_df[patient], sig_df, nu=nu, C=C, kernel=kernel, shrinking=shrinking)
         else:
             raise ValueError("patient_ID ({!r}) not present in rna dataframe".format(patient))

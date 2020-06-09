@@ -25,7 +25,8 @@ def tumor_deconvolve(mixture_data, method, patient_IDs='ALL', cell_signatures=No
                     (ignored for 'CIBERSORT' and 'DeconRNASeq' methods)
             - down_genes: dictionary. Keys are cell types, vaues are a list of down-regulated genes (hugo symbols) for
                 the given cell type
-                    (ignored for 'CIBERSORT') and 'DeconRNASeq' methods)
+                *** Optional for 'SingScore' method ***
+                    (ignored for 'CIBERSORT', 'DeconRNASeq', and 'ssGSEA' methods)
             - args: Dictionary of arguments to pass on to the given method
         Outputs:
             - x: dataframe of frequencies/scores for each specified patient

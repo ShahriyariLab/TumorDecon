@@ -213,14 +213,14 @@ def run_tumor_decon():
         if u.get() == "ssGSEA paper gene set":
             up_genes = td.read_ssGSEA_up_genes(td.get_td_Home()+"data/Gene_sets.csv")
         else:
-            up_genes = td.read_custom_geneset(path_to_up_genes)
+            up_genes = td.read_geneset(path_to_up_genes)
         if method == 'ssgsea':
             new_text = "Ran "+m.get()+" with up genes "+u.get()
             status["text"] = new_text
             solns = td.tumor_deconvolve(rna_df, method, patient_IDs='ALL', up_genes=up_genes, args={'alpha':float(alpha.get()), 'print_progress':False})
         else: # singscore
             if d.get() != "None":
-                down_genes = td.read_custom_geneset(path_to_down_genes)
+                down_genes = td.read_geneset(path_to_down_genes)
                 new_text = "Ran "+m.get()+" with up genes "+u.get()+" down genes "+d.get()
                 status["text"] = new_text
                 solns = td.tumor_deconvolve(rna_df, method, patient_IDs='ALL', up_genes=up_genes, down_genes=down_genes)
