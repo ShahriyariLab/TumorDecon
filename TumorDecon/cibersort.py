@@ -21,7 +21,7 @@ def cibersort(rna_sample, sig_df, nu=0.5, C=1.0, kernel='linear', shrinking=True
 
     # If a numerical of nu not explicitly specified, use gridsearch to find the best nu:
     if nu == 'best':
-        gridsearch = GridSearchCV(NuSVR(C=C, kernel=kernel, max_iter=-1, shrinking=shrinking), cv=5, param_grid={"nu": [0.25, 0.5, 0.75]}, scoring='neg_mean_squared_error', refit=True, iid=False)
+        gridsearch = GridSearchCV(NuSVR(C=C, kernel=kernel, max_iter=-1, shrinking=shrinking), cv=5, param_grid={"nu": [0.25, 0.5, 0.75]}, scoring='neg_mean_squared_error', refit=True)
         gridsearch.fit(sig_df, rna_sample)
         nu = gridsearch.best_params_['nu']
 

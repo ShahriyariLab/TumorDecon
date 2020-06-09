@@ -34,10 +34,7 @@ Output:
 # Sample data location
 data_loc = td.get_td_Home()+"data/"
 
-## read in sample data (colon cancer gene expression from TCGA Pancancer):
-rna = td.read_rna_file(data_loc+'coadred_data_RNA_Seq_v2_expression_median.txt', fetch_missing_hugo=False)
-
-## OR: download data directly from cbioportal:
+## read in sample data (download colon cancer gene expressions directly from cbioportal):
 rna = td.download_from_cbio(url="http://download.cbioportal.org/coadread_tcga_pan_can_atlas_2018.tar.gz", fetch_missing_hugo=False)
 
 ## Drop any rows (genes) that contain a NaN value from rna expression data
