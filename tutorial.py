@@ -2,8 +2,8 @@
 
 ## The next 2 lines only needed if package not installed on system
 ## (and running tutorial from inside the package directory)
-import sys
-sys.path.insert(0,"..")
+# import sys
+# sys.path.insert(0,"..")
 
 import TumorDecon as td
 
