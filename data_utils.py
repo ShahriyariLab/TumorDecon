@@ -5,7 +5,7 @@ def get_td_Home():
     # Returns the path where this file is stored
     return os.path.realpath(__file__).strip("data_utils.py")
 
-def read_rna_file(rna_file_path, identifier='hugo'):
+def read_rna_file(rna_file_path, identifier='hugo', fetch_missing_hugo=True):
     """
     Read in a cbioportal pancancer or TCGA Xena Hug txt file containing mixture gene expression data, and return a pandas dataframe.
     Columns are patients, Rows are genes
@@ -17,6 +17,7 @@ def read_rna_file(rna_file_path, identifier='hugo'):
             Must be set to either:
                 - 'hugo' for Hugo Symbols
                 - 'entrez' for Entrez Gene ID
+        - fetch_missing_hugo: boolean. Whether to fetch missing Hugo Symbols (by Entrez Gene ID) from ncbi website
     Output:
         - pandas data frame (num_genes x num_patients) with either Hugo_Symbol or Entrez_Gene_Id as index
     """
@@ -34,7 +35,9 @@ def read_rna_file(rna_file_path, identifier='hugo'):
     elif "Hugo_Symbol" in rna.columns:
         rna[['Hugo_Symbol', 'Entrez_Gene_Id']] = rna[['Hugo_Symbol', 'Entrez_Gene_Id']].astype(str)
         if identifier == 'hugo':
-            rna = hugo(rna)
+            if fetch_missing_hugo:
+                print("Fetching missing Hugo Symbols for genes by Entrez ID...")
+                rna = hugo(rna)
             rna = rna.set_index(['Hugo_Symbol']).drop(['Entrez_Gene_Id'], axis=1)
             # Remove rows/genes that don't have a Hugo Symbol name:
             rna = rna.drop('nan')
@@ -58,13 +61,14 @@ def read_rna_file(rna_file_path, identifier='hugo'):
     return rna
 
 
-def download_by_name(source, type):
+def download_by_name(source, type, fetch_missing_hugo=True):
     """
     Function to download TCGA data from either UCSC Xena Hub or cBioPortal given
     the desired source and cancer type, instead of a URL.
         Inputs:
             - source: either "xena" or "cbio"
             - type: specific strings. Each will be presented as options in a dropdown menu in the GUI
+            - fetch_missing_hugo: boolean. Whether to fetch missing Hugo Symbols (by Entrez Gene ID) from ncbi website
         Outputs:
             - pandas df of mixture data
     """
@@ -81,7 +85,7 @@ def download_by_name(source, type):
         else:
             raise ValueError("type {!r} not available from UCSC Xena".format(type))
         # Download and return:
-        data = download_from_xena(url="https://tcga.xenahubs.net/download/TCGA."+urlcode+".sampleMap/HiSeqV2.gz")
+        data = download_from_xena(url="https://tcga.xenahubs.net/download/TCGA."+urlcode+".sampleMap/HiSeqV2.gz", fetch_missing_hugo=fetch_missing_hugo)
         return data
     elif source in ["cbio", "CbioPortal", "cbioportal"]:
         type_dict = {'Acute Myeloid Leukemia':'laml','Adrenocortical Carcinoma':'acc', 'Bladder Urothelial Carcinoma':'blca', 'Brain Lower Grade Glioma':'lgg', 'Breast Invasive Carcinoma':'brca',
@@ -95,20 +99,21 @@ def download_by_name(source, type):
         else:
             raise ValueError("type {!r} not available from CbioPortal".format(type))
         # Download and return:
-        data = download_from_cbio(url="http://download.cbioportal.org/"+urlcode+"_tcga_pan_can_atlas_2018.tar.gz")
+        data = download_from_cbio(url="http://download.cbioportal.org/"+urlcode+"_tcga_pan_can_atlas_2018.tar.gz", fetch_missing_hugo=fetch_missing_hugo)
         return data
     else:
         raise ValueError("source ({!r}) must be 'xena' or 'cbioportal'".format(source))
 
 
 
-def download_from_cbio(url="http://download.cbioportal.org/uvm_tcga_pan_can_atlas_2018.tar.gz", save_location=get_td_Home()+"data/downloaded/", delete_after=False):
+def download_from_cbio(url="http://download.cbioportal.org/uvm_tcga_pan_can_atlas_2018.tar.gz", save_location=get_td_Home()+"data/downloaded/", delete_after=False, fetch_missing_hugo=True):
     """
     Function to download data directly from cbioportal and read it in as a pandas df.
         Inputs:
             - url: url to data
             - save_loc: where to save the data. Default is in TumorDecon directory, under data/downloaded
             - delete_after: not implemented yet. Whether to delete data after reading
+            - fetch_missing_hugo: boolean. Whether to fetch missing Hugo Symbols (by Entrez Gene ID) from ncbi website
         Outputs:
             - pandas df of mixture data
     """
@@ -130,16 +135,17 @@ def download_from_cbio(url="http://download.cbioportal.org/uvm_tcga_pan_can_atla
         # tar.extractall(folder.strip(".tar.gz"))
         tar.close()
     # Read in data:
-    return read_rna_file(folder+"/data_RNA_Seq_v2_expression_median.txt")
+    return read_rna_file(folder+"/data_RNA_Seq_v2_expression_median.txt", fetch_missing_hugo=fetch_missing_hugo)
 
 
-def download_from_xena(url="https://tcga.xenahubs.net/download/TCGA.UCS.sampleMap/HiSeqV2.gz", save_location=get_td_Home()+"data/downloaded/", delete_after=False):
+def download_from_xena(url="https://tcga.xenahubs.net/download/TCGA.UCS.sampleMap/HiSeqV2.gz", save_location=get_td_Home()+"data/downloaded/", delete_after=False, fetch_missing_hugo=True):
     """
     Function to download data directly from TCGA Xena Hub and read it in as a pandas df.
         Inputs:
             - url: url to data
             - save_loc: where to save the data. Default is in TumorDecon directory, under data/downloaded
             - delete_after: not implemented yet. Whether to delete data after reading
+            - fetch_missing_hugo: boolean. Whether to fetch missing Hugo Symbols (by Entrez Gene ID) from ncbi website
         Outputs:
             - pandas df of mixture data
     """
@@ -156,18 +162,18 @@ def download_from_xena(url="https://tcga.xenahubs.net/download/TCGA.UCS.sampleMa
     wget.download(url, save_location)
     # pandas read_csv can handle the zipped file - no need to unzip
     # Read in data:
-    logdf = read_rna_file(zipfile)
+    logdf = read_rna_file(zipfile, fetch_missing_hugo=fetch_missing_hugo)
     # Transform from log2(x+1):
     df = 2.**logdf - 1
     return df
 
 
-def read_lm22_file(lm22_file_path=get_td_Home()+"data/LM22.txt"):
+def read_lm22_file(file_path=get_td_Home()+"data/LM22.txt"):
     """
-    Read in the LM22 signature matrix file (containing signature gene expression data for 22 different cell types)
+    Read in the LM22 (or LM6) signature matrix file (containing signature gene expression data for 22 different cell types)
     and return a pandas dataframe
     Inputs:
-        - lm22_file_path: string. Relative or full path to the LM22 signature matrix file
+        - file_path: string. Relative or full path to the LM22/LM6 signature matrix file
             This file is tab seperated. Columns are cell types, Rows are gene Hugo Symbols.
     Output:
         - pandas data frame. Columns are cell types, Rows are genes, indexed by Hugo Symbol.
@@ -175,7 +181,7 @@ def read_lm22_file(lm22_file_path=get_td_Home()+"data/LM22.txt"):
 
     import pandas as pd
 
-    lm22 = pd.read_csv(lm22_file_path, sep='\t')
+    lm22 = pd.read_csv(file_path, sep='\t')
     # lm22['Hugo_Symbol'] = lm22['Gene symbol']
     # lm22 = lm22.drop(['Gene symbol'], axis = 1)
     new_column_names = lm22.columns.tolist()
@@ -354,7 +360,7 @@ def read_ssGSEA_up_genes(filepath=get_td_Home()+'data/Gene_sets.csv'):
 
     return up_genes
 
-def read_custom_geneset(filepath):
+def read_geneset(filepath):
     """
         Function to read in a custom csv file containing the up or down regulated
             genes for each cell type
@@ -375,7 +381,7 @@ def read_custom_geneset(filepath):
         chosen_genes[cell] = list(gene_sets[cell].dropna())
     return chosen_genes
 
-# Trange Le
+
 def corr_table(methods, results, cell_types, true_freqs):
     import pandas as pd
     import numpy as np
@@ -396,8 +402,6 @@ def corr_table(methods, results, cell_types, true_freqs):
     return np.abs(p_corr_per_cell), np.abs(p_corr_per_sample), np.abs(s_corr_per_cell), np.abs(s_corr_per_sample)
 
 
-
-# Trang Le
 def corr_mean_std(corr_per_cell, corr_per_sample):
     import pandas as pd
     import numpy as np
@@ -411,7 +415,6 @@ def corr_mean_std(corr_per_cell, corr_per_sample):
 
 
 
-# Trang Le
 def flatten_corr_per_cell(corr_per_cell):
     import pandas as pd
     import numpy as np
@@ -430,7 +433,6 @@ def flatten_corr_per_cell(corr_per_cell):
     return corr_per_cell2
 
 
-# Trang Le
 def predicted_truth_bycell(method, method_freqs, exp_freqs, cell_types):
     import pandas as pd
 
