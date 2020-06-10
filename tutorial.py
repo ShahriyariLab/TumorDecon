@@ -1,5 +1,11 @@
 # tutorial.py
 
+"""
+## To install TumorDecon with pip, use:
+
+pip install git+https://github.com/kristyhoran/singscore
+pip install TumorDecon
+"""
 import TumorDecon as td
 
 """
@@ -95,7 +101,7 @@ ssgsea_scores = td.tumor_deconvolve(rna, 'ssGSEA',  patient_IDs=patient_subset, 
 print(ssgsea_scores)
 
 ## SingScore can be run with just an up-regulated gene set (unidirectional):
-singscore_unidirectional = td.tumor_deconvolve(rna, 'singscore',  patient_IDs='ALL', up_genes=up_geneset)
+singscore_unidirectional = td.tumor_deconvolve(rna, 'singscore',  patient_IDs=patient_subset, up_genes=up_geneset)
 print(singscore_unidirectional)
 
 ## or with both an up-regulated and down-regulated gene set (bidirectional):
