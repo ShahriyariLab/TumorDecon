@@ -9,4 +9,5 @@ TumorDecon software includes four deconvolution methods (DeconRNAseq [Gong2013],
 TumorDecon is available on Github (https://github.com/ShahriyariLab/TumorDecon) and PyPI (https://pypi.org/project/TumorDecon/). To install the software with pip, use both of the following two commands:
 
 pip install TumorDecon
+
 pip install git+https://github.com/kristyhoran/singscore
