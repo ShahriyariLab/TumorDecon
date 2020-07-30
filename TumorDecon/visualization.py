@@ -5,30 +5,17 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+from TumorDecon.data_utils import *
 
 # combine the cells that belong to same family:
-def combine_celltypes(df):
+def norm_and_combine(df):
     # Check if freqs already sum to 1, and scale them first if not:
     h=np.ones(df.shape[0])
     k=df.sum(axis=1).values
     if not np.array_equal(h,k):
         df=sum_upto_1(df)
 
-    B=['B cells naive', 'B cells memory']
-    T_CD4=['T cells CD4 naive', 'T cells CD4 memory resting', 'T cells CD4 memory activated','T cells follicular helper', 'T cells regulatory (Tregs)']
-    NK=['NK cells resting', 'NK cells activated']
-    Macro= ['Macrophages M0', 'Macrophages M1', 'Macrophages M2']
-    Mast=['Mast cells resting','Mast cells activated']
-    DC=['Dendritic cells resting', 'Dendritic cells activated']
-
-    df['B cells'] = df[B].sum(axis=1)
-    df['T cells CD4'] = df[T_CD4].sum(axis=1)
-    df['NK cells'] = df[NK].sum(axis=1)
-    df['Macrophages'] = df[Macro].sum(axis=1)
-    df['Mast cells']=df[Mast].sum(axis=1)
-    df['DC'] = df[DC].sum(axis=1)
-    df=df.drop(['Dendritic cells resting', 'Dendritic cells activated','Macrophages M0', 'Macrophages M1', 'Macrophages M2', 'T cells follicular helper','T cells regulatory (Tregs)','NK cells resting', 'NK cells activated','T cells CD4 naive', 'T cells CD4 memory resting', 'T cells CD4 memory activated', 'Mast cells resting', 'Mast cells activated','B cells naive', 'B cells memory'],axis=1)
-    df=df.rename({'T cells CD8':'CD8 T cells','T cells CD4':'CD4 T cells'},axis='columns')
+    df = combine_celltypes(df)
     return df
 
 # scale the frequences so they sum up to 1
@@ -48,7 +35,7 @@ def cell_frequency_boxplot(sample_cell_freq, xsize=12, ysize=7):
         - cells frequency box plot in descending order
     """
     print(sample_cell_freq)
-    new_cell_freq = combine_celltypes(sample_cell_freq)
+    new_cell_freq = norm_and_combine(sample_cell_freq)
     b=new_cell_freq.median(axis = 0)
     b=list(zip(b.index,b))
     b = sorted(b, key=lambda x: x[-1],reverse=True)
@@ -56,7 +43,7 @@ def cell_frequency_boxplot(sample_cell_freq, xsize=12, ysize=7):
     new_cell_freq=new_cell_freq[sorted_cells]
     sns.set(rc={'figure.figsize':(xsize,ysize)})
     sns.set(style="white")
-    palette={'Macrophages':'violet','CD8 T cells':'orange','CD4 T cells':'goldenrod','Monocytes':'lightsalmon','NK cells':'olivedrab','Mast cells':'red','B cells':'darkcyan','T cells gamma delta':'dodgerblue','DC':'gray','Plasma cells':'seagreen','Neutrophils':'navy', 'Eosinophils':'purple'}
+    palette={'Macrophages':'violet','CD8 T cells':'orange','CD4 T cells':'goldenrod','Monocytes':'lightsalmon','NK cells':'olivedrab','Mast cells':'red','B cells':'darkcyan','T cells gamma delta':'dodgerblue','Dendritic cells':'gray','Plasma cells':'seagreen','Neutrophils':'navy', 'Eosinophils':'purple'}
     sns.boxplot(x="Patient_ID", y="value",order=sorted_cells, data=pd.melt(new_cell_freq),palette=palette)
     plt.xlabel('')
     plt.xticks(rotation=90)
@@ -74,13 +61,13 @@ def cell_frequency_barchart(sample_cell_freq, title=" ", xsize=15, ysize=7):
     Output:
         - a barchart plot that shows all cell frequency of all samples
     """
-    new_cell_freq=combine_celltypes(sample_cell_freq)
+    new_cell_freq=norm_and_combine(sample_cell_freq)
     b=new_cell_freq.median(axis = 0)
     b=list(zip(b.index,b))
     b = sorted(b, key=lambda x: x[-1],reverse=True)
     sorted_cells=[x[0] for x in b]
     new_cell_freq=new_cell_freq[sorted_cells]
-    palette={'Macrophages':'violet','CD8 T cells':'orange','CD4 T cells':'goldenrod','Monocytes':'lightsalmon','NK cells':'olivedrab','Mast cells':'red','B cells':'darkcyan','T cells gamma delta':'dodgerblue','DC':'gray','Plasma cells':'seagreen','Neutrophils':'navy', 'Eosinophils':'purple'}
+    palette={'Macrophages':'violet','CD8 T cells':'orange','CD4 T cells':'goldenrod','Monocytes':'lightsalmon','NK cells':'olivedrab','Mast cells':'red','B cells':'darkcyan','T cells gamma delta':'dodgerblue','Dendritic cells':'gray','Plasma cells':'seagreen','Neutrophils':'navy', 'Eosinophils':'purple'}
     sns.set(rc={'figure.figsize':(xsize,ysize)})
     sns.set_style("white")
 
@@ -114,7 +101,7 @@ def hierarchical_clustering(sample_cell_freq, xsize=20, ysize=5):
     # Change figure size:
     plt.rcParams["figure.figsize"] = (xsize,ysize)
 
-    new_cell_freq=combine_celltypes(sample_cell_freq)
+    new_cell_freq=norm_and_combine(sample_cell_freq)
 
     b=new_cell_freq.median(axis = 0)
     b=list(zip(b.index,b))
@@ -136,7 +123,7 @@ def pair_plot(sample_cell_freq, xsize=5, ysize=5):
     """
     # Change figure size:
     plt.rcParams["figure.figsize"] = (xsize,ysize)
-    new_cell_freq=combine_celltypes(sample_cell_freq)
+    new_cell_freq=norm_and_combine(sample_cell_freq)
     b=new_cell_freq.median(axis = 0)
     b=list(zip(b.index,b))
     b = sorted(b, key=lambda x: x[-1],reverse=True)

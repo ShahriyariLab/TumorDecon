@@ -115,10 +115,11 @@ print(singscore_bidirectional)
 ################################################################################
 ######################### Visualize Results ####################################
 ################################################################################
-## WARNING: These functions currently only work for fractions/ranks generated with LM22 cell signatures
 
 # Select a subset of the patients to visualize:
 results = ciber_freqs.loc[patient_subset]
+
+## WARNING: The following 4 functions currently only work for fractions/ranks generated with LM22 cell signatures
 
 ## Can visualize results with boxplots:
 td.cell_frequency_boxplot(results)
@@ -131,3 +132,20 @@ td.hierarchical_clustering(results)
 
 # and Pair plots:
 td.pair_plot(results)
+
+
+## Note that these visualization functions simplify the results by summing the frequencies/scores of related cell types!
+## You can use the "combine_celltypes" function to create such a simplified output dataframe.
+
+## For example, LM22 contains 3 types of macrophages (M0,M1,M2). To combine these into one general
+## column called "Macrophages", we define a dictionary, and pass it to the combine_celltypes() function:
+dict = {'Macrophages':['Macrophages M0', 'Macrophages M1', 'Macrophages M2']}
+print(td.combine_celltypes(results, cols_to_combine=dict))
+
+## If no argument is passed in for "cols_to_combine", the function will attempt to use a sensible categorization
+## based on the cell types present in the LM22 signature matrix:
+print("\nOriginal Columns:")
+print(results.columns)
+results_simplified = td.combine_celltypes(results)
+print("\nSimplified Columns:")
+print(results_simplified.columns)

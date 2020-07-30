@@ -1,3 +1,6 @@
+# hugoify.py
+# Author: Nathan Grant
+
 import requests
 from bs4 import BeautifulSoup
 import sys

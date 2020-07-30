@@ -382,6 +382,51 @@ def read_geneset(filepath):
     return chosen_genes
 
 
+def combine_celltypes(df, cols_to_combine=None):
+    """
+    Function to sum related cell types into a single column
+    Inputs:
+        - df: pandas dataframe. Output of td.tumor_deconvolve()
+        - cols_to_combine: dictionary. Keys are the desired names of any new cell type columns,
+            values are an arary of current column names to combine under the key name
+                - Default = dictionary for combining common cell types from LM22
+    Outputs:
+        - Pandas dataframe with columns combined as specified by the dictionary.
+            All unmentioned column names are left as they are
+    """
+    import pandas as pd
+
+    if cols_to_combine is not None:
+        from collections.abc import Mapping
+        if isinstance(cols_to_combine, Mapping):
+            pass
+        else:
+            raise TypeError("cols_to_combine must be a dictionary")
+    else:
+        # Use LM22 as default
+        print("WARNING: No dictionary defined for combining columns... Attempting to use default dict for LM22 signatures")
+        cols_to_combine = {'B cells':['B cells naive', 'B cells memory'],
+                           'CD4 T cells':['T cells CD4 naive', 'T cells CD4 memory resting', 'T cells CD4 memory activated','T cells follicular helper', 'T cells regulatory (Tregs)'],
+                           'CD8 T cells':['T cells CD8'],
+                           'NK cells':['NK cells resting', 'NK cells activated'],
+                           'Macrophages':['Macrophages M0', 'Macrophages M1', 'Macrophages M2'],
+                           'Mast cells':['Mast cells resting','Mast cells activated'],
+                           'Dendritic cells':['Dendritic cells resting', 'Dendritic cells activated']
+                          }
+    df2 = df.copy()
+    for cell_type in cols_to_combine.keys():
+        try:
+            df2[cell_type] = df2[cols_to_combine[cell_type]].sum(axis=1)
+            df2.drop(cols_to_combine[cell_type],axis=1,inplace=True)
+        except KeyError as e:
+            print("WARNING: Failed to combine some columns: ")
+            print("KeyError: "+str(e))
+            pass
+
+    return df2
+
+
+
 def corr_table(methods, results, cell_types, true_freqs):
     import pandas as pd
     import numpy as np
