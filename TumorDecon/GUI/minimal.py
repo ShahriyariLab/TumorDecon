@@ -197,9 +197,10 @@ def run_tumor_decon():
 
     if method in ['cibersort','deconrnaseq']:
         if s.get() == "LM22":
-            sig_df = td.read_lm22_file("../data/LM22.txt")
+            sig_df = td.read_sig_file()
         else:
-            sig_df = td.read_lm22_file(path_to_custom_sig)
+            # Assumes geneID is still Hugo_Symbol - eventually expand capability
+            sig_df = td.read_sig_file(file_path=path_to_custom_sig)
         scaling = "None"
         if normalization.get() == "Z-Scaling":
             scaling = 'zscore'

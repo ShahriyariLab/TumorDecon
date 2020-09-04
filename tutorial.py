@@ -41,7 +41,7 @@ Output:
 data_loc = td.get_td_Home()+"data/"
 
 ## read in sample data (download colon cancer gene expressions directly from cbioportal):
-rna = td.download_from_cbio(url="http://download.cbioportal.org/coadread_tcga_pan_can_atlas_2018.tar.gz", fetch_missing_hugo=False)
+# rna = td.download_from_cbio(url="http://download.cbioportal.org/coadread_tcga_pan_can_atlas_2018.tar.gz", fetch_missing_hugo=False)
 
 ## Can alternatively read in a data file already downloaded:
 # rna = td.read_rna_file(data_loc+'coadred_data_RNA_Seq_v2_expression_median.txt')
@@ -55,7 +55,7 @@ rna.dropna(axis=0, inplace=True)
 ## Linear models (cibersort and DeconRNASeq) require a signature matrix, and output cell fractions:
 
 ## read in LM22 file as signature matrix
-sig = td.read_lm22_file(data_loc+'LM22.txt')
+sig = td.read_sig_file(data_loc+'LM22.txt')
 print(sig)
 
 ## We can also use the custom signature matrix created in 'sig_matrix_tutorial.py'.
@@ -116,7 +116,7 @@ print(singscore_unidirectional)
 
 ## or with both an up-regulated and down-regulated gene set (bidirectional):
 ## (Can also derive up-regulated and down-regulated genes from a signature matrix, such as LM6 file):
-LM6 = td.read_lm22_file(data_loc+'LM6.txt')
+LM6 = td.read_sig_file(data_loc+'LM6.txt')
 up_geneset_LM6, down_geneset_LM6 = td.find_up_down_genes_from_sig(LM6, down_cutoff=0.4, up_cutoff=4.0)
 
 singscore_bidirectional = td.tumor_deconvolve(rna, 'singscore',  patient_IDs=patient_subset, up_genes=up_geneset_LM6, down_genes=down_geneset_LM6)

@@ -40,7 +40,7 @@ def read_rna_file(rna_file_path, identifier='hugo', fetch_missing_hugo=False):
                 rna = hugo(rna)
             rna = rna.set_index(['Hugo_Symbol']).drop(['Entrez_Gene_Id'], axis=1)
             # Remove rows/genes that don't have a Hugo Symbol name:
-            rna = rna.drop('nan')
+            rna = rna.drop('nan',errors='ignore') # ignore error that arrises if no 'nan's
         elif identifier == 'entrez':
             rna = rna.set_index(['Entrez_Gene_Id']).drop(['Hugo_Symbol'], axis=1)
             # Remove rows/genes that don't have a Entrez ID:
@@ -168,40 +168,45 @@ def download_from_xena(url="https://tcga.xenahubs.net/download/TCGA.UCS.sampleMa
     return df
 
 
-def read_lm22_file(file_path=get_td_Home()+"data/LM22.txt"):
+# # OBSOLETE! Use read_sig_file() with no arguments to read in LM22.txt instead
+# def read_lm22_file(file_path=get_td_Home()+"data/LM22.txt"):
+#     """
+#     Read in the LM22 (or LM6) signature matrix file (containing signature gene expression data for 22 different cell types)
+#     and return a pandas dataframe
+#     Inputs:
+#         - file_path: string. Relative or full path to the LM22/LM6 signature matrix file
+#             This file is tab seperated. Columns are cell types, Rows are gene Hugo Symbols.
+#     Output:
+#         - pandas data frame. Columns are cell types, Rows are genes, indexed by Hugo Symbol.
+#     """
+#
+#     import pandas as pd
+#
+#     print("WARNING: 'read_lm22_file()'' depreciated. Use 'read_sig_file()' with no arguments to read in 'LM22.txt' signatures")
+#
+#     lm22 = pd.read_csv(file_path, sep='\t')
+#     # lm22['Hugo_Symbol'] = lm22['Gene symbol']
+#     # lm22 = lm22.drop(['Gene symbol'], axis = 1)
+#     new_column_names = lm22.columns.tolist()
+#     new_column_names[0] = 'Hugo_Symbol'
+#     lm22.columns = new_column_names
+#     lm22 = lm22.set_index(['Hugo_Symbol'])
+#
+#     return lm22
+
+
+def read_sig_file(file_path=get_td_Home()+"data/LM22.txt", geneID="Hugo_Symbol"):
     """
-    Read in the LM22 (or LM6) signature matrix file (containing signature gene expression data for 22 different cell types)
-    and return a pandas dataframe
+    Reads in a signature matrix file (containing signature gene expression data for
+    a number of different cell types), converts the gene identifiers to Hugo Symbols,
+    and returns a pandas dataframe.
+        ** IF NO FILE PATH GIVEN, LM22 IS ASSUMED **
     Inputs:
-        - file_path: string. Relative or full path to the LM22/LM6 signature matrix file
-            This file is tab seperated. Columns are cell types, Rows are gene Hugo Symbols.
-    Output:
-        - pandas data frame. Columns are cell types, Rows are genes, indexed by Hugo Symbol.
-    """
-
-    import pandas as pd
-
-    lm22 = pd.read_csv(file_path, sep='\t')
-    # lm22['Hugo_Symbol'] = lm22['Gene symbol']
-    # lm22 = lm22.drop(['Gene symbol'], axis = 1)
-    new_column_names = lm22.columns.tolist()
-    new_column_names[0] = 'Hugo_Symbol'
-    lm22.columns = new_column_names
-    lm22 = lm22.set_index(['Hugo_Symbol'])
-
-    return lm22
-
-
-
-def read_sig_file(file_path, geneID="Hugo_Symbol"):
-    """
-    Read in a custom signature matrix file, convert gene identifiers to Hugo Symbols,
-    and return a pandas dataframe
-    Inputs:
-        - file_path: string. Relative or full path to signature matrix file
+        - file_path: string. Relative or full path to signature matrix file.
             This file is tab seperated. Columns are cell types, Rows are genes
-            Function assumes there is only one column for gene identifier
-        - geneID: string in ["Hugo_Symbol", "Ensembl_Gene_ID", "Entrez_Gene_ID"]
+            If no file_path given, LM22 is assumed.
+        - geneID: string in ["Hugo_Symbol", "Ensembl_Gene_ID", "Entrez_Gene_ID"].
+            Describes how genes are labeled in the signature matrix file
     Output:
         - pandas data frame. Columns are cell types, Rows are genes, indexed by Hugo Symbol.
     """
