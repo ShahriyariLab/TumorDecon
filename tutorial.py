@@ -41,7 +41,7 @@ Output:
 data_loc = td.get_td_Home()+"data/"
 
 ## read in sample data (download colon cancer gene expressions directly from cbioportal):
-# rna = td.download_from_cbio(url="http://download.cbioportal.org/coadread_tcga_pan_can_atlas_2018.tar.gz", fetch_missing_hugo=False)
+rna = td.download_from_cbio(url="http://download.cbioportal.org/coadread_tcga_pan_can_atlas_2018.tar.gz", fetch_missing_hugo=False)
 
 ## Can alternatively read in a data file already downloaded:
 # rna = td.read_rna_file(data_loc+'coadred_data_RNA_Seq_v2_expression_median.txt')
@@ -61,8 +61,9 @@ print(sig)
 ## We can also use the custom signature matrix created in 'sig_matrix_tutorial.py'.
     ## Note that this signature matrix uses Ensembl Gene IDs instead of Hugo Symbols.
     ## The read_sig_file() function can convert these to Hugo Symbols:
-sig2 = td.read_sig_file('kmeans_signature_matrix_qval.txt', geneID='Ensembl_Gene_ID')
-print(sig2)
+# path_to_custom_sig = '~/TumorDecon/kmeans_signature_matrix_qval.txt' # Change to reflect your path
+# sig2 = td.read_sig_file(path_to_custom_sig, geneID='Ensembl_Gene_ID')
+# print(sig2)
 
 ## Run cibersort on ALL patients:
 ## optional argments include:

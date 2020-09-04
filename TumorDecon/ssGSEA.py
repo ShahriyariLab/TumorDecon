@@ -120,7 +120,7 @@ def ssGSEA_main(rna_df, up_genes=None, patient_IDs='ALL', args={}):
     # Get ranks for each cell type, for each patient:
     print("Running ssGSEA...")
     scores = pd.DataFrame()
-    scores['Patient_ID'] = up_genes.keys()
+    scores['Patient_ID'] = list(up_genes.keys())
     scores = scores.set_index(['Patient_ID'])
     for patient in patient_list:
         if patient in rna_df.columns:
