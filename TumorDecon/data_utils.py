@@ -5,7 +5,7 @@ def get_td_Home():
     # Returns the path where this file is stored
     return os.path.realpath(__file__).strip("data_utils.py")
 
-def read_rna_file(rna_file_path, identifier='hugo', fetch_missing_hugo=True):
+def read_rna_file(rna_file_path, identifier='hugo', fetch_missing_hugo=False):
     """
     Read in a cbioportal pancancer or TCGA Xena Hug txt file containing mixture gene expression data, and return a pandas dataframe.
     Columns are patients, Rows are genes
@@ -190,6 +190,101 @@ def read_lm22_file(file_path=get_td_Home()+"data/LM22.txt"):
     lm22 = lm22.set_index(['Hugo_Symbol'])
 
     return lm22
+
+
+
+def read_sig_file(file_path, geneID="Hugo_Symbol"):
+    """
+    Read in a custom signature matrix file, convert gene identifiers to Hugo Symbols,
+    and return a pandas dataframe
+    Inputs:
+        - file_path: string. Relative or full path to signature matrix file
+            This file is tab seperated. Columns are cell types, Rows are genes
+            Function assumes there is only one column for gene identifier
+        - geneID: string in ["Hugo_Symbol", "Ensembl_Gene_ID", "Entrez_Gene_ID"]
+    Output:
+        - pandas data frame. Columns are cell types, Rows are genes, indexed by Hugo Symbol.
+    """
+    import pandas as pd
+
+    # Read file:
+    sig = pd.read_csv(file_path, sep='\t')
+    # Get name of column with gene identifiers:
+    gene_col = list(sig)[0]
+
+    to_be_dropped = []
+    if geneID == "Hugo_Symbol":
+        sig['Hugo_Symbol'] = sig[gene_col]
+
+    elif geneID == 'Ensembl_Gene_ID':
+        sig['Hugo_Symbol'], to_be_dropped = convert_emsembl(sig[gene_col])
+
+    elif geneID == 'Entrez_Gene_ID':
+        raise ValueError("Conversion from Entrez Gene ID to Hugo Symbol not yet supported in TumorDecon")
+
+    else:
+        raise ValueError("geneID ({!r}) must be set to 'Hugo_Symbol', 'Ensembl_Gene_ID', or 'Entrez_Gene_ID'".format(geneID))
+
+    # Drop old gene ID column, rename columns, and set Index to Hugo Symbol:
+    sig = sig.drop([gene_col], axis = 1)
+    new_column_names = sig.columns.tolist()
+    sig.columns = new_column_names
+    sig = sig.set_index(['Hugo_Symbol'])
+
+    # Drop columns without a Hugo Symbol:
+    sig = sig.drop(to_be_dropped)
+    return sig
+
+def convert_emsembl(ensembl):
+    """
+    Input:
+        - ordered array of Ensembl Gene IDs to be converted to Hugo Symbols
+    Outputs:
+        - hugo: array. Ordered array of Hugo Symbols correponsing to the Ensembl Gene IDs
+        - to_be_dropped: array. List of genes without a correponsing hugo symbol (to be dropped)
+    """
+    import pandas as pd
+    import numpy as np
+
+    hugo = np.array(ensembl)
+    # Will drop any genes that don't have a corresponding Hugo Symbol
+    to_be_dropped = []
+
+    # Create dictionary for conversion:
+    ensembl_hugo = pd.read_csv(get_td_Home()+"data/gene_ID_conversion/hugo_enseml_synonym.txt", header=0, sep="\t")
+    ensembl_hugo2 = pd.read_csv(get_td_Home()+"data/gene_ID_conversion/GSE87692_Primary_HsESF_TPMs_073015.txt", header=0, sep="\t")
+    ensembl_hugo2 = ensembl_hugo2[['ensemble_geneid', 'Associate Gene Name']]
+    ensembl_hugo2.set_index('Associate Gene Name', inplace=True)
+    ensembl_hugo.dropna(subset=['Ensembl ID(supplied by Ensembl)', 'Ensembl gene ID'], how='all', inplace=True)
+    ensembl_hugo = ensembl_hugo.set_index('Approved symbol')
+
+    for i, gene in enumerate(ensembl):
+        # first search in the ensembl_hugo2 then if not found in ensembl_hugo
+        is_found = ensembl_hugo2.loc[ensembl_hugo2['ensemble_geneid'] == gene]
+        if len(is_found) > 0 and is_found.index[0] != "#N/A":
+            hugo[i] = is_found.index[0]
+
+        else:
+            t = ensembl_hugo.loc[ensembl_hugo['Ensembl ID(supplied by Ensembl)'] == gene]
+            # first search in 'Ensembl ID(supplied by Ensembl)' column, if not found, search the other col
+            if len(t) > 0:
+                if type(t.index[0]) == str:
+                    hugo[i] = t.index[0]
+
+            else:
+                t2 = ensembl_hugo.loc[ensembl_hugo['Ensembl gene ID'] == gene]
+                if len(t2) > 0:
+                    if type(t2.index[0]) == str:
+                        hugo[i] = t2.index[0]
+                    else:
+                        to_be_dropped.append(gene)
+                else:
+                    to_be_dropped.append(gene)
+    if len(to_be_dropped) > 0:
+        print("Missing Hugo Symbols for the following genes (will be dropped from signature matrix):")
+        print(to_be_dropped)
+    return hugo, to_be_dropped
+
 
 def df_normalization(df, scaling, axis=0):
     """

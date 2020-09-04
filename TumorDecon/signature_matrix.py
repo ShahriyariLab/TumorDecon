@@ -104,7 +104,7 @@ def cluster_each_cell(cells, cell_expr, max_clusters):
 
         one_cell_expr.columns = [cell + "_subtype_" + str(cluster_labels[i] + 1) + "." + str(i) for i in range(len(cluster_labels))]
         out_df[list(one_cell_expr)] = one_cell_expr
-    out_df = out_df.rename_axis("genes")
+    out_df = out_df.rename_axis("gene")
     return out_df
 
 
