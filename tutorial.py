@@ -1,6 +1,11 @@
 # tutorial.py
 
 """
+If you use the package or some parts of codes, please cite: 
+T. Le, R. Aronow, A. Kirshtein, L. Shahriyari, 
+A review of digital cytometry methods: estimating the relative abundance of cell types in a bulk of cells, 
+Briefing in Bioinformatics, 2020,https://doi.org/10.1093/bib/bbaa219.
+
 ## To install TumorDecon with pip, use:
 
 pip install git+https://github.com/kristyhoran/singscore
