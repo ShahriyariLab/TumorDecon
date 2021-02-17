@@ -442,7 +442,7 @@ def variance_threshold_selector(data, threshold=0.5):
     return data_red.T
 
 
-def read_ssGSEA_up_genes(filepath=get_td_Home()+'data/Gene_sets.csv'):
+def read_ssGSEA_up_genes(file_path=get_td_Home()+'data/Gene_sets.csv'):
     """
     Function to read in csv file containing the gene sets from the ssGSEA paper
     Inputs:
@@ -453,29 +453,32 @@ def read_ssGSEA_up_genes(filepath=get_td_Home()+'data/Gene_sets.csv'):
     """
     import pandas as pd
 
-    gene_sets = pd.read_csv(filepath)
+    gene_sets = pd.read_csv(file_path)
     up_genes = {}
     for cell in gene_sets['Cell type'].unique():
         up_genes[cell] = gene_sets[gene_sets['Cell type'] == cell]['Symbol'].tolist()
 
     return up_genes
 
-def read_geneset(filepath):
+def read_geneset(file_path=get_td_Home()+"data/LM22_up_genes.csv"):
     """
         Function to read in a custom csv file containing the up or down regulated
             genes for each cell type
         Inputs:
-            - path to correct csv file. File should have columns named for each cell type,
-            and rows should contain Hugo Symbols for genes to be considered as up (or down)
+            - file_path: string. Relative or full path to signature matrix file.
+            File should have columns named for each cell type, and rows should
+            contain Hugo Symbols for genes to be considered as up (or down)
             regulated for that cell type. If not all cell types have the same number of up(down)
             regulated genes, excess rows in each column should be coded as "NaN"
+                If no file_path given, the up-regulated gene set derived in
+                Le et al. (2020) is assumed.
         Outputs:
             - dictionary. Keys are the column names of the given csv file (cell types),
                 values are a list of up (down) regulated genes for that cell type
     """
     import pandas as pd
     import numpy as np
-    gene_sets = pd.read_csv(filepath)
+    gene_sets = pd.read_csv(file_path)
     chosen_genes = {} # up or down genes
     for cell in gene_sets.columns.unique():
         chosen_genes[cell] = list(gene_sets[cell].dropna())
