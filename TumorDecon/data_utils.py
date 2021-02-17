@@ -87,7 +87,7 @@ def download_by_name(source, type, fetch_missing_hugo=True):
         # Download and return:
         data = download_from_xena(url="https://tcga.xenahubs.net/download/TCGA."+urlcode+".sampleMap/HiSeqV2.gz", fetch_missing_hugo=fetch_missing_hugo)
         return data
-    elif source in ["cbio", "CbioPortal", "cbioportal"]:
+    elif source in ["cbio", "CbioPortal", "cbioportal", "cBioPortal"]:
         type_dict = {'Acute Myeloid Leukemia':'laml','Adrenocortical Carcinoma':'acc', 'Bladder Urothelial Carcinoma':'blca', 'Brain Lower Grade Glioma':'lgg', 'Breast Invasive Carcinoma':'brca',
                      'Cervical Squamous Cell Carcinoma':'cesc', 'Cholangiocarcinoma':'chol', 'Colorectal Adenocarcinoma':'coadred', 'Diffuse Large B-Cell Lymphoma':'dlbc', 'Esophageal Adenocarcinoma':'esca',
                      'Glioblastoma Multiforme':'gbm', 'Head and Neck Squamous Cell Carcinoma':'hnsc', 'Kidney Chromophobe':'kich', 'Kidney Renal Clear Cell Carcinoma':'kirc', 'Kidney Renal Papillary Cell Carcinoma':'kirp',

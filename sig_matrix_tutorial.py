@@ -49,6 +49,7 @@ td.create_signature_matrix("batch_corrected_sample_data_clustered.txt", cell_typ
 
 # The two signature matrices created above should be identical
 
+# We can then use this signature matrix 'kmeans_signature_matrix_qval.txt' to run TumorDecon! (tutorial.py)
 
 ################################################################################
 ######### Example 2: Build signature matrix from LM22 source profiles ##########
