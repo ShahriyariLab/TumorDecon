@@ -6,6 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 from TumorDecon.data_utils import *
+from collections.abc import Mapping
 
 # combine the cells that belong to same family:
 def norm_and_combine(df):
@@ -26,11 +27,18 @@ def sum_upto_1(df):
     return df
 
 
-def cell_frequency_boxplot(sample_cell_freq, xsize=12, ysize=7):
+def cell_frequency_boxplot(sample_cell_freq, title="", save_as=None, axes_style=None, rcParams={'figure.figsize':(15,7)}):
     """
      Input:
         - 'sample_cell_freq': A dataframe that include cell frequency of samples
             Rows are samples id, columns are cell names
+        - 'title': string.
+        - 'save_as': location where to save plot. If None, plot is not saved.
+        - 'axes_style': a dictionary of parameters to pass to sns.set_style, to customize plot
+            Valid dictionary keys can be found by running "sns.axes_style()" with no arguments
+        - 'rcParams': a dictionary of parameters to pass as the rc argument to
+            sns.set function
+                Valid dictionary keys can be found at https://matplotlib.org/stable/tutorials/introductory/customizing.html
     Output:
         - cells frequency box plot in descending order
     """
@@ -41,23 +49,43 @@ def cell_frequency_boxplot(sample_cell_freq, xsize=12, ysize=7):
     b = sorted(b, key=lambda x: x[-1],reverse=True)
     sorted_cells=[x[0] for x in b]
     new_cell_freq=new_cell_freq[sorted_cells]
-    sns.set(rc={'figure.figsize':(xsize,ysize)})
-    sns.set(style="white")
+    # Customize the plots with user-defined parameters
+    sns.set(rc=rcParams)
+    if axes_style is not None:
+        if not isinstance(axes_style, Mapping):
+            raise TypeError('axes_style must be a dict')
+        sns.set_style("white", axes_style)
+    else:
+        sns.set(style="white")
+
     palette={'Macrophages':'violet','CD8 T cells':'orange','CD4 T cells':'goldenrod','Monocytes':'lightsalmon','NK cells':'olivedrab','Mast cells':'red','B cells':'darkcyan','T cells gamma delta':'dodgerblue','Dendritic cells':'gray','Plasma cells':'seagreen','Neutrophils':'navy', 'Eosinophils':'purple'}
-    sns.boxplot(x="Patient_ID", y="value",order=sorted_cells, data=pd.melt(new_cell_freq),palette=palette)
+    try:
+        sns.boxplot(x="Patient_ID", y="value",order=sorted_cells, data=pd.melt(new_cell_freq),palette=palette)
+    except ValueError:
+        sns.boxplot(x="variable", y="value",order=sorted_cells, data=pd.melt(new_cell_freq),palette=palette)
     plt.xlabel('')
     plt.xticks(rotation=90)
     plt.ylabel('Frequencey')
     plt.subplots_adjust(top=0.95,bottom=0.2)
+    if save_as is not None:
+        plt.savefig(save_as)
     plt.show()
     return
 
 
-def cell_frequency_barchart(sample_cell_freq, title=" ", xsize=15, ysize=7):
+def cell_frequency_barchart(sample_cell_freq, title=" ", save_as=None, axes_style=None, rcParams={'figure.figsize':(15,7)}):
     """
      Input:
         - 'sample_cell_freq': A dataframe that include cell frequency of samples
             Rows are samples id, columns are cell names
+        - 'title': string.
+        - 'save_as': location where to save plot. If None, plot is not saved.
+        - 'axes_style': a dictionary of parameters to pass to sns.set_style, to customize plot
+            Valid dictionary keys can be found by running "sns.axes_style()" with no arguments
+        - 'rcParams': a dictionary of parameters to pass as the rc argument to
+            sns.set function
+                Valid dictionary keys can be found at https://matplotlib.org/stable/tutorials/introductory/customizing.html
+
     Output:
         - a barchart plot that shows all cell frequency of all samples
     """
@@ -67,9 +95,16 @@ def cell_frequency_barchart(sample_cell_freq, title=" ", xsize=15, ysize=7):
     b = sorted(b, key=lambda x: x[-1],reverse=True)
     sorted_cells=[x[0] for x in b]
     new_cell_freq=new_cell_freq[sorted_cells]
+    # Customize the plots with user-defined parameters
+    sns.set(rc=rcParams)
+    if axes_style is not None:
+        if not isinstance(axes_style, Mapping):
+            raise TypeError('axes_style must be a dict')
+        else:
+            sns.set_style("white", axes_style)
+    else:
+        sns.set(style="white")
     palette={'Macrophages':'violet','CD8 T cells':'orange','CD4 T cells':'goldenrod','Monocytes':'lightsalmon','NK cells':'olivedrab','Mast cells':'red','B cells':'darkcyan','T cells gamma delta':'dodgerblue','Dendritic cells':'gray','Plasma cells':'seagreen','Neutrophils':'navy', 'Eosinophils':'purple'}
-    sns.set(rc={'figure.figsize':(xsize,ysize)})
-    sns.set_style("white")
 
     color=[]
     for gene in sorted_cells:
@@ -86,19 +121,28 @@ def cell_frequency_barchart(sample_cell_freq, title=" ", xsize=15, ysize=7):
     plt.ylabel('Patients')
     plt.title(title)
     plt.subplots_adjust(top=0.95,left=0.05, right=0.8) # don't cut off legend
+    if save_as is not None:
+        plt.savefig(save_as)
     plt.show()
     return
 
 
-def hierarchical_clustering(sample_cell_freq, xsize=20, ysize=5):
+def hierarchical_clustering(sample_cell_freq, title="", save_as=None, rcParams={'figure.figsize':(20,5)}, xsize=20, ysize=5):
     """
-     Input:
+    Input:
         - 'sample_cell_freq': A dataframe that include cell frequency of samples
             Rows are samples id, columns are cell names
+        - 'title': string.
+        - 'save_as': location where to save plot. If None, plot is not saved.
+        - 'rcParams': a dictionary of parameters to pass as the rc argument to
+            sns.set function
+                Valid dictionary keys can be found at https://matplotlib.org/stable/tutorials/introductory/customizing.html
     Output:
         - hierarchical clustered heatmap from cell frequency of samples
     """
-    # Change figure size:
+    # # Change figure size, and any other user-defined rcParams:
+    # for key, value in rcParams.items():
+    #     plt.rcParams[key] = value
     plt.rcParams["figure.figsize"] = (xsize,ysize)
 
     new_cell_freq=norm_and_combine(sample_cell_freq)
@@ -108,21 +152,33 @@ def hierarchical_clustering(sample_cell_freq, xsize=20, ysize=5):
     b = sorted(b, key=lambda x: x[-1],reverse=True)
     sorted_cells=[x[0] for x in b]
     new_cell_freq=new_cell_freq[sorted_cells]
+    sns.set(rc=rcParams)
     sns.clustermap(new_cell_freq,cmap='coolwarm',row_cluster=False)
     plt.subplots_adjust(bottom=0.2)
+    plt.title(title)
+    if save_as is not None:
+        plt.savefig(save_as)
     plt.show()
     return
 
-def pair_plot(sample_cell_freq, xsize=5, ysize=5):
+def pair_plot(sample_cell_freq, title="", save_as=None, rcParams={'figure.figsize':(5,5)}, xsize=5, ysize=5):
     """
      Input:
         - 'sample_cell_freq': A dataframe that include cell frequency of samples
            Rows are samples id, columns are cell names
+       - 'title': string.
+       - 'save_as': location where to save plot. If None, plot is not saved.
+       - 'rcParams': a dictionary of parameters to pass as the rc argument to
+           sns.set function
+               Valid dictionary keys can be found at https://matplotlib.org/stable/tutorials/introductory/customizing.html
     Output:
         - pairplot from cell frequency of samples
     """
-    # Change figure size:
+    # Change figure size, and any other user-defined rcParams:
+    # for key, value in rcParams.items():
+    #     plt.rcParams[key] = value
     plt.rcParams["figure.figsize"] = (xsize,ysize)
+
     new_cell_freq=norm_and_combine(sample_cell_freq)
     b=new_cell_freq.median(axis = 0)
     b=list(zip(b.index,b))
@@ -133,11 +189,14 @@ def pair_plot(sample_cell_freq, xsize=5, ysize=5):
     p = sns.pairplot(new_cell_freq)
     p.fig.set_size_inches(xsize,ysize)
     plt.subplots_adjust(bottom=0.1, top=1.0, left=0.05, right=0.95)
+    plt.title(title)
+    if save_as is not None:
+        plt.savefig(save_as)
     plt.show()
     return
 
 
-def stack_barchart(methods, results, true_freqs, cell_types, colors, fig_size, fig_name):
+def stack_barchart(methods, results, true_freqs, cell_types, colors, fig_size, fig_name, save_as=None):
     sample_labels = np.arange(1,len(true_freqs)+1)
 
     fig, axs = plt.subplots(1, len(methods)+1, sharey=True, figsize=fig_size)
@@ -169,4 +228,6 @@ def stack_barchart(methods, results, true_freqs, cell_types, colors, fig_size, f
     ax_leg.axis('off')
     # fig_leg.savefig('Figures/'+fig_name+'_stack_barchart_legend.eps')
 
+    if save_as is not None:
+        plt.savefig(save_as)
     # fig.savefig('Figures/'+fig_name+'_stack_barchart.eps')
