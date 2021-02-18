@@ -74,7 +74,7 @@ def download_by_name(source, type, fetch_missing_hugo=True):
     """
     if source in ["xena", "Xena", "UCSC", "ucsc"]:
         type_dict = {'Acute Myeloid Leukemia':'LAML','Adrenocortical Cancer':'ACC', 'Bile Duct Cancer':'CHOL', 'Bladder Cancer':'BLCA', 'Breast Cancer':'BRCA',
-                     'Cervical Cancer':'CESC', 'Colon and Rectal Cancer':'COADRED', 'Colon Cancer':'COAD', 'Endometrioid Cancer':'UCEC', 'Esophageal Cancer':'ESCA',
+                     'Cervical Cancer':'CESC', 'Colon and Rectal Cancer':'COADREAD', 'Colon Cancer':'COAD', 'Endometrioid Cancer':'UCEC', 'Esophageal Cancer':'ESCA',
                      'Glioblastoma':'GBM', 'Head and Neck Cancer':'HNSC', 'Kidney Chromophobe':'KICH', 'Kidney Clear Cell Carcinoma':'KIRC', 'Kidney Papillary Cell Carcinoma':'KIRP',
                      'Large B-cell Lymphoma':'DLBC', 'Liver Cancer':'LIHC', 'Lower Grade Glioma':'LGG', 'Lower Grade Glioma and Glioblastoma':'GBMLGG', 'Lung Adenocarcinoma':'LUAD',
                      'Lung Cancer':'LUNG', 'Lung Squamous Cell Carcinoma':'LUSC', 'Melanoma':'SKCM', 'Mesothelioma':'MESO', 'Ocular Melanomas':'UVM', 'Ovarian Cancer':'OV',
@@ -85,7 +85,7 @@ def download_by_name(source, type, fetch_missing_hugo=True):
         else:
             raise ValueError("type {!r} not available from UCSC Xena".format(type))
         # Download and return:
-        data = download_from_xena(url="https://tcga.xenahubs.net/download/TCGA."+urlcode+".sampleMap/HiSeqV2.gz", fetch_missing_hugo=fetch_missing_hugo)
+        data = download_from_xena(url="https://tcga-xena-hub.s3.us-east-1.amazonaws.com/latest/TCGA."+urlcode+".sampleMap/HiSeqV2.gz", fetch_missing_hugo=fetch_missing_hugo)
         return data
     elif source in ["cbio", "CbioPortal", "cbioportal", "cBioPortal"]:
         type_dict = {'Acute Myeloid Leukemia':'laml','Adrenocortical Carcinoma':'acc', 'Bladder Urothelial Carcinoma':'blca', 'Brain Lower Grade Glioma':'lgg', 'Breast Invasive Carcinoma':'brca',
@@ -138,7 +138,7 @@ def download_from_cbio(url="http://download.cbioportal.org/uvm_tcga_pan_can_atla
     return read_rna_file(folder+"/data_RNA_Seq_v2_expression_median.txt", fetch_missing_hugo=fetch_missing_hugo)
 
 
-def download_from_xena(url="https://tcga.xenahubs.net/download/TCGA.UCS.sampleMap/HiSeqV2.gz", save_location=get_td_Home()+"data/downloaded/", delete_after=False, fetch_missing_hugo=True):
+def download_from_xena(url="https://tcga-xena-hub.s3.us-east-1.amazonaws.com/latest/TCGA.UCS.sampleMap/HiSeqV2.gz", save_location=get_td_Home()+"data/downloaded/", delete_after=False, fetch_missing_hugo=True):
     """
     Function to download data directly from TCGA Xena Hub and read it in as a pandas df.
         Inputs:
@@ -159,6 +159,7 @@ def download_from_xena(url="https://tcga.xenahubs.net/download/TCGA.UCS.sampleMa
         os.remove(zipfile)
     # Download file and save it locally:
     print("Downloading data from Xena Hub...")
+    print(url)
     wget.download(url, save_location)
     # pandas read_csv can handle the zipped file - no need to unzip
     # Read in data:
