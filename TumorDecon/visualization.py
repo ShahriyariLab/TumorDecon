@@ -1,4 +1,4 @@
-# visualization.py - authored by Sumeyye Su & Trang Le
+# visualization.py - originally authored by Sumeyye Su & Trang Le
 
 import os
 import pandas as pd
@@ -127,23 +127,17 @@ def cell_frequency_barchart(sample_cell_freq, title=" ", save_as=None, axes_styl
     return
 
 
-def hierarchical_clustering(sample_cell_freq, title="", save_as=None, rcParams={'figure.figsize':(20,5)}, xsize=20, ysize=5):
+def hierarchical_clustering(sample_cell_freq, title="", save_as=None, figsize=(20,5)):
     """
     Input:
         - 'sample_cell_freq': A dataframe that include cell frequency of samples
             Rows are samples id, columns are cell names
         - 'title': string.
         - 'save_as': location where to save plot. If None, plot is not saved.
-        - 'rcParams': a dictionary of parameters to pass as the rc argument to
-            sns.set function
-                Valid dictionary keys can be found at https://matplotlib.org/stable/tutorials/introductory/customizing.html
+        - 'figsize': tuple. (x,y) size of the figure
     Output:
         - hierarchical clustered heatmap from cell frequency of samples
     """
-    # # Change figure size, and any other user-defined rcParams:
-    # for key, value in rcParams.items():
-    #     plt.rcParams[key] = value
-    plt.rcParams["figure.figsize"] = (xsize,ysize)
 
     new_cell_freq=norm_and_combine(sample_cell_freq)
 
@@ -152,8 +146,7 @@ def hierarchical_clustering(sample_cell_freq, title="", save_as=None, rcParams={
     b = sorted(b, key=lambda x: x[-1],reverse=True)
     sorted_cells=[x[0] for x in b]
     new_cell_freq=new_cell_freq[sorted_cells]
-    sns.set(rc=rcParams)
-    sns.clustermap(new_cell_freq,cmap='coolwarm',row_cluster=False)
+    sns.clustermap(new_cell_freq,cmap='coolwarm',row_cluster=False, figsize=figsize)
     plt.subplots_adjust(bottom=0.2)
     plt.title(title)
     if save_as is not None:
@@ -161,24 +154,17 @@ def hierarchical_clustering(sample_cell_freq, title="", save_as=None, rcParams={
     plt.show()
     return
 
-def pair_plot(sample_cell_freq, title="", save_as=None, rcParams={'figure.figsize':(5,5)}, xsize=5, ysize=5):
+def pair_plot(sample_cell_freq, title="", save_as=None, figsize=(20,20)):
     """
      Input:
         - 'sample_cell_freq': A dataframe that include cell frequency of samples
            Rows are samples id, columns are cell names
        - 'title': string.
        - 'save_as': location where to save plot. If None, plot is not saved.
-       - 'rcParams': a dictionary of parameters to pass as the rc argument to
-           sns.set function
-               Valid dictionary keys can be found at https://matplotlib.org/stable/tutorials/introductory/customizing.html
-    Output:
+       - 'figsize': tuple. (x,y) size of the figure
+     Output:
         - pairplot from cell frequency of samples
     """
-    # Change figure size, and any other user-defined rcParams:
-    # for key, value in rcParams.items():
-    #     plt.rcParams[key] = value
-    plt.rcParams["figure.figsize"] = (xsize,ysize)
-
     new_cell_freq=norm_and_combine(sample_cell_freq)
     b=new_cell_freq.median(axis = 0)
     b=list(zip(b.index,b))
@@ -187,7 +173,7 @@ def pair_plot(sample_cell_freq, title="", save_as=None, rcParams={'figure.figsiz
     new_cell_freq=new_cell_freq[sorted_cells]
 
     p = sns.pairplot(new_cell_freq)
-    p.fig.set_size_inches(xsize,ysize)
+    p.fig.set_size_inches(*figsize)
     plt.subplots_adjust(bottom=0.1, top=1.0, left=0.05, right=0.95)
     plt.title(title)
     if save_as is not None:
@@ -196,10 +182,28 @@ def pair_plot(sample_cell_freq, title="", save_as=None, rcParams={'figure.figsiz
     return
 
 
-def stack_barchart(methods, results, true_freqs, cell_types, colors, fig_size, fig_name, save_as=None):
+def stack_barchart(methods, results, true_freqs, cell_types, colors, figsize=(10,10), save_as=None):
+    """
+    Plot for comparing predicted frequencies of each method to true data
+     Input:
+        - 'methods': 1D string array.
+                All methods with results to plot.
+        - 'results': 3D float array (num_methods x num_cell_types x num_samples)
+                All TumorDecon results from each method.
+        - 'true_freqs': 2D float array (num_cell_types x num_samples)
+                Experimental cell frequencies to compare results to.
+        - 'cell_types': 1D string array.
+                All cell_types listed in the results
+        - 'colors': 1D string array of length num_cell_types.
+                Enties must be valid matplotlib colors string (to associate with each given cell_type)
+        - 'save_as': location where to save plot. If None, plot is not saved.
+        - 'figsize': tuple. (x,y) size of the figure
+     Output:
+        - pairplot from cell frequency of samples
+    """
     sample_labels = np.arange(1,len(true_freqs)+1)
 
-    fig, axs = plt.subplots(1, len(methods)+1, sharey=True, figsize=fig_size)
+    fig, axs = plt.subplots(1, len(methods)+1, sharey=True, figsize=figsize)
     # Remove vertical space between axes
     fig.subplots_adjust(wspace=0.1)
 
@@ -226,8 +230,6 @@ def stack_barchart(methods, results, true_freqs, cell_types, colors, fig_size, f
     ax_leg.legend(*axs[-1].get_legend_handles_labels(), loc='center')
     # hide the axes frame and the x/y labels
     ax_leg.axis('off')
-    # fig_leg.savefig('Figures/'+fig_name+'_stack_barchart_legend.eps')
 
     if save_as is not None:
         plt.savefig(save_as)
-    # fig.savefig('Figures/'+fig_name+'_stack_barchart.eps')
