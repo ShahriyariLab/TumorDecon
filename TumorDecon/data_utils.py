@@ -131,7 +131,7 @@ def download_from_cbio(url="https://cbioportal-datahub.s3.amazonaws.com/uvm_tcga
     folder = file.replace(".tar.gz","")
     if file.endswith("tar.gz") and not os.path.exists(folder):
         tar = tarfile.open(file, "r:gz")
-        tar.extract("data_RNA_Seq_v2_expression_median.txt", path=folder)
+        tar.extract(folder.split("/")[-1]+"/data_RNA_Seq_v2_expression_median.txt", path=save_location)
         # tar.extractall(folder.strip(".tar.gz"))
         tar.close()
     # Read in data:
