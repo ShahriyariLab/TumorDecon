@@ -89,7 +89,7 @@ def download_by_name(source, type, fetch_missing_hugo=True):
         return data
     elif source in ["cbio", "CbioPortal", "cbioportal", "cBioPortal"]:
         type_dict = {'Acute Myeloid Leukemia':'laml','Adrenocortical Carcinoma':'acc', 'Bladder Urothelial Carcinoma':'blca', 'Brain Lower Grade Glioma':'lgg', 'Breast Invasive Carcinoma':'brca',
-                     'Cervical Squamous Cell Carcinoma':'cesc', 'Cholangiocarcinoma':'chol', 'Colorectal Adenocarcinoma':'coadred', 'Diffuse Large B-Cell Lymphoma':'dlbc', 'Esophageal Adenocarcinoma':'esca',
+                     'Cervical Squamous Cell Carcinoma':'cesc', 'Cholangiocarcinoma':'chol', 'Colorectal Adenocarcinoma':'coadread', 'Diffuse Large B-Cell Lymphoma':'dlbc', 'Esophageal Adenocarcinoma':'esca',
                      'Glioblastoma Multiforme':'gbm', 'Head and Neck Squamous Cell Carcinoma':'hnsc', 'Kidney Chromophobe':'kich', 'Kidney Renal Clear Cell Carcinoma':'kirc', 'Kidney Renal Papillary Cell Carcinoma':'kirp',
                      'Liver Hepatocellular Carcinoma':'lihc', 'Lung Adenocarcinoma':'luad', 'Lung Squamous Cell Carcinoma':'lusc', 'Mesothelioma':'meso', 'Ovarian Serous Cystadenocarcinoma':'ov', 'Pancreatic Adenocarcinoma':'paad',
                      'Pheochromocytoma and Paraganglioma':'pcpg', 'Prostate Adenocarcinoma':'prad', 'Sarcoma':'sarc', 'Skin Cutaneous Melanoma':'skcm', 'Stomach Adenocarcinoma':'stad', 'Testicular Germ Cell Tumors':'tgct',
@@ -99,14 +99,14 @@ def download_by_name(source, type, fetch_missing_hugo=True):
         else:
             raise ValueError("type {!r} not available from CbioPortal".format(type))
         # Download and return:
-        data = download_from_cbio(url="http://download.cbioportal.org/"+urlcode+"_tcga_pan_can_atlas_2018.tar.gz", fetch_missing_hugo=fetch_missing_hugo)
+        data = download_from_cbio(url="https://cbioportal-datahub.s3.amazonaws.com/"+urlcode+"_tcga_pan_can_atlas_2018.tar.gz", fetch_missing_hugo=fetch_missing_hugo)
         return data
     else:
         raise ValueError("source ({!r}) must be 'xena' or 'cbioportal'".format(source))
 
 
 
-def download_from_cbio(url="http://download.cbioportal.org/uvm_tcga_pan_can_atlas_2018.tar.gz", save_location=get_td_Home()+"data/downloaded/", delete_after=False, fetch_missing_hugo=True):
+def download_from_cbio(url="https://cbioportal-datahub.s3.amazonaws.com/uvm_tcga_pan_can_atlas_2018.tar.gz", save_location=get_td_Home()+"data/downloaded/", delete_after=False, fetch_missing_hugo=True):
     """
     Function to download data directly from cbioportal and read it in as a pandas df.
         Inputs:
@@ -122,7 +122,7 @@ def download_from_cbio(url="http://download.cbioportal.org/uvm_tcga_pan_can_atla
     import os
 
     # Check if file already downloaded, if not, download it:
-    file = save_location+url.replace('http://download.cbioportal.org/','')
+    file = save_location+url.replace('https://cbioportal-datahub.s3.amazonaws.com/','')
     if not os.path.exists(file):
         # Download file and save it locally:
         print("Downloading data from cbioportal...")
@@ -159,7 +159,6 @@ def download_from_xena(url="https://tcga-xena-hub.s3.us-east-1.amazonaws.com/lat
         os.remove(zipfile)
     # Download file and save it locally:
     print("Downloading data from Xena Hub...")
-    print(url)
     wget.download(url, save_location)
     # pandas read_csv can handle the zipped file - no need to unzip
     # Read in data:
