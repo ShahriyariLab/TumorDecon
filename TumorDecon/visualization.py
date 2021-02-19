@@ -27,22 +27,26 @@ def sum_upto_1(df):
     return df
 
 
-def cell_frequency_boxplot(sample_cell_freq, title="", save_as=None, axes_style=None, rcParams={'figure.figsize':(15,7)}):
+def cell_frequency_boxplot(sample_cell_freq, title="", title_fontsize=10, save_as=None, axes_style=None, font_scale=1, xylabel_fontsize=10, rcParams={'figure.figsize':(15,7)}):
     """
      Input:
         - 'sample_cell_freq': A dataframe that include cell frequency of samples
             Rows are samples id, columns are cell names
         - 'title': string.
-        - 'save_as': location where to save plot. If None, plot is not saved.
+        - 'title_fontsize': int. Font-size for title.
+        - 'save_as': string. Filename to save plot as (full or relative path). File format is
+            inferred from filename's extension ('.png', '.pdf', '.eps', etc)
+                If None, plot is not saved.
         - 'axes_style': a dictionary of parameters to pass to sns.set_style, to customize plot
             Valid dictionary keys can be found by running "sns.axes_style()" with no arguments
+        - 'font_scale': float. Scaling for plot elements such as tick labels
+        - 'xylabel_fontsize': int. Font-size for axis labels.
         - 'rcParams': a dictionary of parameters to pass as the rc argument to
             sns.set function
                 Valid dictionary keys can be found at https://matplotlib.org/stable/tutorials/introductory/customizing.html
     Output:
         - cells frequency box plot in descending order
     """
-    print(sample_cell_freq)
     new_cell_freq = norm_and_combine(sample_cell_freq)
     b=new_cell_freq.median(axis = 0)
     b=list(zip(b.index,b))
@@ -50,13 +54,13 @@ def cell_frequency_boxplot(sample_cell_freq, title="", save_as=None, axes_style=
     sorted_cells=[x[0] for x in b]
     new_cell_freq=new_cell_freq[sorted_cells]
     # Customize the plots with user-defined parameters
-    sns.set(rc=rcParams)
+    sns.set(rc=rcParams, font_scale=font_scale)
     if axes_style is not None:
         if not isinstance(axes_style, Mapping):
             raise TypeError('axes_style must be a dict')
         sns.set_style("white", axes_style)
     else:
-        sns.set(style="white")
+        sns.set(style="white", font_scale=font_scale)
 
     palette={'Macrophages':'violet','CD8 T cells':'orange','CD4 T cells':'goldenrod','Monocytes':'lightsalmon','NK cells':'olivedrab','Mast cells':'red','B cells':'darkcyan','T cells gamma delta':'dodgerblue','Dendritic cells':'gray','Plasma cells':'seagreen','Neutrophils':'navy', 'Eosinophils':'purple'}
     try:
@@ -65,7 +69,8 @@ def cell_frequency_boxplot(sample_cell_freq, title="", save_as=None, axes_style=
         sns.boxplot(x="variable", y="value",order=sorted_cells, data=pd.melt(new_cell_freq),palette=palette)
     plt.xlabel('')
     plt.xticks(rotation=90)
-    plt.ylabel('Frequencey')
+    plt.ylabel('Frequency',fontsize=xylabel_fontsize)
+    plt.title(title, fontsize=title_fontsize)
     plt.subplots_adjust(top=0.95,bottom=0.2)
     if save_as is not None:
         plt.savefig(save_as)
@@ -73,15 +78,20 @@ def cell_frequency_boxplot(sample_cell_freq, title="", save_as=None, axes_style=
     return
 
 
-def cell_frequency_barchart(sample_cell_freq, title=" ", save_as=None, axes_style=None, rcParams={'figure.figsize':(15,7)}):
+def cell_frequency_barchart(sample_cell_freq, title=" ", title_fontsize=10, save_as=None, axes_style=None, font_scale=1, xylabel_fontsize=10, rcParams={'figure.figsize':(15,7)}):
     """
      Input:
         - 'sample_cell_freq': A dataframe that include cell frequency of samples
             Rows are samples id, columns are cell names
         - 'title': string.
-        - 'save_as': location where to save plot. If None, plot is not saved.
+        - 'title_fontsize': int. Font-size for title.
+        - 'save_as': string. Filename to save plot as (full or relative path). File format is
+            inferred from filename's extension ('.png', '.pdf', '.eps', etc)
+                If None, plot is not saved.
         - 'axes_style': a dictionary of parameters to pass to sns.set_style, to customize plot
             Valid dictionary keys can be found by running "sns.axes_style()" with no arguments
+        - 'font_scale': float. Scaling for plot elements such as tick labels
+        - 'xylabel_fontsize': int. Font-size for axis labels.
         - 'rcParams': a dictionary of parameters to pass as the rc argument to
             sns.set function
                 Valid dictionary keys can be found at https://matplotlib.org/stable/tutorials/introductory/customizing.html
@@ -96,14 +106,14 @@ def cell_frequency_barchart(sample_cell_freq, title=" ", save_as=None, axes_styl
     sorted_cells=[x[0] for x in b]
     new_cell_freq=new_cell_freq[sorted_cells]
     # Customize the plots with user-defined parameters
-    sns.set(rc=rcParams)
+    sns.set(rc=rcParams, font_scale=font_scale)
     if axes_style is not None:
         if not isinstance(axes_style, Mapping):
             raise TypeError('axes_style must be a dict')
         else:
             sns.set_style("white", axes_style)
     else:
-        sns.set(style="white")
+        sns.set(style="white", font_scale=font_scale)
     palette={'Macrophages':'violet','CD8 T cells':'orange','CD4 T cells':'goldenrod','Monocytes':'lightsalmon','NK cells':'olivedrab','Mast cells':'red','B cells':'darkcyan','T cells gamma delta':'dodgerblue','Dendritic cells':'gray','Plasma cells':'seagreen','Neutrophils':'navy', 'Eosinophils':'purple'}
 
     color=[]
@@ -117,9 +127,9 @@ def cell_frequency_barchart(sample_cell_freq, title=" ", save_as=None, axes_styl
 
     plt.yticks([])
     plt.margins(0, 0)
-    plt.xlabel('Frequency')
-    plt.ylabel('Patients')
-    plt.title(title)
+    plt.xlabel('Frequency', fontsize=xylabel_fontsize)
+    plt.ylabel('Patients', fontsize=xylabel_fontsize)
+    plt.title(title, fontsize=title_fontsize)
     plt.subplots_adjust(top=0.95,left=0.05, right=0.8) # don't cut off legend
     if save_as is not None:
         plt.savefig(save_as)
@@ -127,13 +137,17 @@ def cell_frequency_barchart(sample_cell_freq, title=" ", save_as=None, axes_styl
     return
 
 
-def hierarchical_clustering(sample_cell_freq, title="", save_as=None, figsize=(20,5)):
+def hierarchical_clustering(sample_cell_freq, title="", title_fontsize=10, font_scale=1, save_as=None, figsize=(20,5)):
     """
     Input:
         - 'sample_cell_freq': A dataframe that include cell frequency of samples
             Rows are samples id, columns are cell names
         - 'title': string.
-        - 'save_as': location where to save plot. If None, plot is not saved.
+        - 'title_fontsize': int. Font-size for title.
+        - 'font_scale': float. Scaling for plot elements such as tick labels
+        - 'save_as': string. Filename to save plot as (full or relative path). File format is
+            inferred from filename's extension ('.png', '.pdf', '.eps', etc)
+                If None, plot is not saved.
         - 'figsize': tuple. (x,y) size of the figure
     Output:
         - hierarchical clustered heatmap from cell frequency of samples
@@ -146,21 +160,26 @@ def hierarchical_clustering(sample_cell_freq, title="", save_as=None, figsize=(2
     b = sorted(b, key=lambda x: x[-1],reverse=True)
     sorted_cells=[x[0] for x in b]
     new_cell_freq=new_cell_freq[sorted_cells]
+    sns.set(font_scale=font_scale)
     sns.clustermap(new_cell_freq,cmap='coolwarm',row_cluster=False, figsize=figsize)
     plt.subplots_adjust(bottom=0.2)
-    plt.title(title)
+    plt.title(title, fontsize=title_fontsize)
     if save_as is not None:
         plt.savefig(save_as)
     plt.show()
     return
 
-def pair_plot(sample_cell_freq, title="", save_as=None, figsize=(20,20)):
+def pair_plot(sample_cell_freq, title="", title_fontsize=10, font_scale=1, save_as=None, figsize=(20,20)):
     """
      Input:
         - 'sample_cell_freq': A dataframe that include cell frequency of samples
            Rows are samples id, columns are cell names
        - 'title': string.
-       - 'save_as': location where to save plot. If None, plot is not saved.
+       - 'title_fontsize': int. Font-size for title.
+       - 'font_scale': float. Scaling for plot elements such as tick labels
+       - 'save_as': string. Filename to save plot as (full or relative path). File format is
+            inferred from filename's extension ('.png', '.pdf', '.eps', etc)
+                If None, plot is not saved.
        - 'figsize': tuple. (x,y) size of the figure
      Output:
         - pairplot from cell frequency of samples
@@ -172,10 +191,11 @@ def pair_plot(sample_cell_freq, title="", save_as=None, figsize=(20,20)):
     sorted_cells=[x[0] for x in b]
     new_cell_freq=new_cell_freq[sorted_cells]
 
+    sns.set(font_scale=font_scale)
     p = sns.pairplot(new_cell_freq)
     p.fig.set_size_inches(*figsize)
     plt.subplots_adjust(bottom=0.1, top=1.0, left=0.05, right=0.95)
-    plt.title(title)
+    plt.title(title, fontsize=title_fontsize)
     if save_as is not None:
         plt.savefig(save_as)
     plt.show()
@@ -196,7 +216,9 @@ def stack_barchart(methods, results, true_freqs, cell_types, colors, figsize=(10
                 All cell_types listed in the results
         - 'colors': 1D string array of length num_cell_types.
                 Enties must be valid matplotlib colors string (to associate with each given cell_type)
-        - 'save_as': location where to save plot. If None, plot is not saved.
+        - 'save_as': string. Filename to save plot as (full or relative path). File format is
+            inferred from filename's extension ('.png', '.pdf', '.eps', etc)
+                If None, plot is not saved.
         - 'figsize': tuple. (x,y) size of the figure
      Output:
         - pairplot from cell frequency of samples
