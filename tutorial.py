@@ -47,8 +47,9 @@ Output:
 # Sample data location
 data_loc = td.get_td_Home()+"data/"
 
-## read in sample data (download colon cancer gene expressions directly from cbioportal):
-rna = td.download_from_cbio(url="http://download.cbioportal.org/coadread_tcga_pan_can_atlas_2018.tar.gz", fetch_missing_hugo=False)
+## read in sample data (download colon cancer gene expressions directly from cbioportal)
+## and fetch any missing Hugo Symbols from NCBI website:
+rna = td.download_by_name('cbio', 'Colorectal Adenocarcinoma', fetch_missing_hugo=True)
 
 ## Can alternatively read in a data file already downloaded:
 # rna = td.read_rna_file(data_loc+'coadred_data_RNA_Seq_v2_expression_median.txt')
@@ -63,6 +64,7 @@ rna.dropna(axis=0, inplace=True)
 
 ## read in LM22 file as signature matrix
 sig = td.read_sig_file(data_loc+'LM22.txt')
+print("LM22 Signature Matrix:")
 print(sig)
 
 ## We can also use the custom signature matrix created in 'sig_matrix_tutorial.py'.
@@ -70,6 +72,7 @@ print(sig)
     ## The read_sig_file() function can convert these to Hugo Symbols:
 path_to_custom_sig = '~/TumorDecon/kmeans_signature_matrix_qval.txt' # Change to reflect your path
 sig2 = td.read_sig_file(path_to_custom_sig, geneID='Ensembl_Gene_ID')
+print("Custom Signature Matrix created in 'sig_matrix_tutorial.py':")
 print(sig2)
 
 ## Run cibersort on ALL patients:
@@ -81,6 +84,7 @@ print(sig2)
 ##       defaults are nu='best', C=1.0, kernel=linear
 ##   'print_progress': whether to print patient ID as ssGSEA iterates through (default: False)
 ciber_freqs = td.tumor_deconvolve(rna, 'cibersort',  patient_IDs='ALL', cell_signatures=sig, args={'nu':'best', 'scaling':'minmax'})
+print("CIBERSORT Results:")
 print(ciber_freqs)
 
 ## Save results to a file:
@@ -94,6 +98,7 @@ ciber_freqs.to_csv("cibersort_results.csv", index_label='Patient_ID')
 ##    'print_results': whether to print the results of each fit while function is running (default: False)
 ##   'print_progress': whether to print patient ID as ssGSEA iterates through (default: False)
 decon_freqs = td.tumor_deconvolve(rna, 'DeconRNASeq',  patient_IDs='ALL', cell_signatures=sig, args={'scaling':'minmax', 'print_results':False})
+print("DeconRNASeq Results:")
 print(decon_freqs)
 
 # ##############################################################################
@@ -119,10 +124,12 @@ patient_subset = ['TCGA-3L-AA1B-01', 'TCGA-4N-A93T-01', 'TCGA-4T-AA8H-01', 'TCGA
 ##   'norm': whether to normalize enrichment scores, as done by Barbie et al., 2009, online methods, pg. 2
 ##   'print_progress': whether to print patient ID as ssGSEA iterates through (default: False)
 ssgsea_scores = td.tumor_deconvolve(rna, 'ssGSEA',  patient_IDs=patient_subset, up_genes=up_geneset, args={'alpha':0.5, 'norm':True, 'print_progress':False})
+print("ssGSEA Results:")
 print(ssgsea_scores)
 
 ## SingScore can be run with just an up-regulated gene set (unidirectional):
 singscore_unidirectional = td.tumor_deconvolve(rna, 'singscore',  patient_IDs=patient_subset, up_genes=up_geneset)
+print("SingScore Results:")
 print(singscore_unidirectional)
 
 ## or with both an up-regulated and down-regulated gene set (bidirectional):
@@ -131,6 +138,7 @@ LM6 = td.read_sig_file(data_loc+'LM6.txt')
 up_geneset_LM6, down_geneset_LM6 = td.find_up_down_genes_from_sig(LM6, down_cutoff=0.4, up_cutoff=4.0)
 
 singscore_bidirectional = td.tumor_deconvolve(rna, 'singscore',  patient_IDs=patient_subset, up_genes=up_geneset_LM6, down_genes=down_geneset_LM6)
+print("Bidirectional SingScore Results:")
 print(singscore_bidirectional)
 
 ################################################################################
@@ -142,24 +150,24 @@ results = ciber_freqs.loc[patient_subset]
 
 ## WARNING: The following 4 functions currently only work for fractions/ranks
 ## generated with LM22 cell signatures. If you are working with a different group
-## of cell types, we encourage users to copy and edit the source code in
-## TumorDecon/visualization.py (with citation)
+## of cell types, you will need to define your own dictionary for combing cell types
+## An example of this is provided later on in this file.
 
-## Can visualize results with boxplots:
-td.cell_frequency_boxplot(results)
+## Can visualize results with boxplots. To save a plot, add the "save_as" argument:
+td.cell_frequency_boxplot(results, save_as="boxplots.png")
 
 ## Can also visualize with barcharts:
-td.cell_frequency_barchart(results)
+td.cell_frequency_barchart(results, save_as="barcharts.png"))
 
 # Pair Plots:
-td.pair_plot(results)
+td.pair_plot(results, save_as="pairplots.png"))
 
-# and Clustermaps. To save a plot, add the "save_as" argument:
-td.hierarchical_clustering(results, save_as="clusters.png")
+# and Clustermaps.
+td.hierarchical_clustering(results, save_as="clustermaps.png")
 
-## Each of the plots above use matplotlib, and users can customize any of them
-## plot parameters in matplotlib.rcParams. For example:
-td.cell_frequency_boxplot(results, rcParams={'figure.figsize':(5,3)})
+## Each of the plots above use matplotlib and seaborn, and users can customize
+## plot parameters as in these packages. For example:
+td.cell_frequency_boxplot(results, font_scale=0.75, rcParams={'figure.figsize':(5,3)})
 
 ## Note that these visualization functions simplify the results by summing the frequencies/scores of related cell types!
 ## You can use the "combine_celltypes" function to create such a simplified output dataframe.
