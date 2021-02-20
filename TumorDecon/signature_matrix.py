@@ -69,7 +69,7 @@ def find_optimal_k(cell_expr, max_clusters):
     k_vals = np.zeros(len(range(2, min(max_clusters, sample_num))))
     range_n_clusters = list(range(2, min(max_clusters, sample_num)))
     for i, n_clusters in enumerate(range_n_clusters):
-        clusterer = KMeans(n_clusters=n_clusters, random_state=10, n_init=10, n_jobs=-1, tol=1e-3)
+        clusterer = KMeans(n_clusters=n_clusters, random_state=10, n_init=10, tol=1e-3)
         cluster_labels = clusterer.fit_predict(cell_expr)
         silhouette_avg = silhouette_score(cell_expr, cluster_labels)
         k_vals[i] = silhouette_avg
@@ -99,7 +99,7 @@ def cluster_each_cell(cells, cell_expr, max_clusters):
 
         print("%s: Finding optimal K for K-means (max # of clusters = %d)" % (cell, max_clusters))
         k_opt = find_optimal_k(one_cell_expr.T, max_clusters)
-        clusterer = KMeans(n_clusters=k_opt, random_state=10, n_init=10, n_jobs=-1, tol=1e-3)
+        clusterer = KMeans(n_clusters=k_opt, random_state=10, n_init=10, tol=1e-3)
         cluster_labels = clusterer.fit_predict(one_cell_expr.T)
 
         one_cell_expr.columns = [cell + "_subtype_" + str(cluster_labels[i] + 1) + "." + str(i) for i in range(len(cluster_labels))]
