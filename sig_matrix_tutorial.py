@@ -5,7 +5,7 @@ This tutorial walks through an example of generating a signature matrix from raw
 data files. The data used in this tutorial are single cell profiles from the Gene
 Expression Omnibus (GEO) repository. They are available to download on the NCBI
 website, as well as on from our GitHub page, at:
-https://github.com/ShahriyariLab/TumorDecon/tree/master/TumorDecon/data/sig_matrix_example
+https://github.com/ShahriyariLab/TumorDecon/tree/master/TumorDecon/data/sig_matrix_tutorial
 """
 
 import TumorDecon as td
