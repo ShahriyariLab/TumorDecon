@@ -28,7 +28,7 @@ setuptools.setup(
         "pandas>1.0.3",
         "matplotlib>2.2.2",
         "scipy>1.2.1",
-        "requests>2.22.0",
+        "requests>=2.23.0",
         "beautifulsoup4>4.6.0",
         "multiprocess>=0.70.9",
         "seaborn>0.10.0",
