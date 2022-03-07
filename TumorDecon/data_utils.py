@@ -85,7 +85,7 @@ def download_by_name(source, type, fetch_missing_hugo=True):
         else:
             raise ValueError("type {!r} not available from UCSC Xena".format(type))
         # Download and return:
-        data = download_from_xena(url="https://tcga-xena-hub.s3.us-east-1.amazonaws.com/latest/TCGA."+urlcode+".sampleMap/HiSeqV2.gz", fetch_missing_hugo=fetch_missing_hugo)
+        data = download_from_xena(url="https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA."+urlcode+".sampleMap/HiSeqV2.gz", fetch_missing_hugo=fetch_missing_hugo)
         return data
     elif source in ["cbio", "CbioPortal", "cbioportal", "cBioPortal"]:
         type_dict = {'Acute Myeloid Leukemia':'laml','Adrenocortical Carcinoma':'acc', 'Bladder Urothelial Carcinoma':'blca', 'Brain Lower Grade Glioma':'lgg', 'Breast Invasive Carcinoma':'brca',
@@ -130,15 +130,18 @@ def download_from_cbio(url="https://cbioportal-datahub.s3.amazonaws.com/uvm_tcga
     # Unzip if applicable
     folder = file.replace(".tar.gz","")
     if file.endswith("tar.gz") and not os.path.exists(folder):
-        tar = tarfile.open(file, "r:gz")
-        tar.extract(folder.split("/")[-1]+"/data_RNA_Seq_v2_expression_median.txt", path=save_location)
-        # tar.extractall(folder.strip(".tar.gz"))
+        try:
+            tar.extract(folder.split("/")[-1]+"/data_RNA_Seq_v2_expression_median.txt", path=save_location)
+            return read_rna_file(folder+"/data_RNA_Seq_v2_expression_median.txt", fetch_missing_hugo=fetch_missing_hugo)
+        except:
+            try:
+                tar.extract(folder.split("/")[-1]+"/data_mrna_seq_v2_rsem.txt", path=save_location)
+                return read_rna_file(folder+"/data_mrna_seq_v2_rsem.txt", fetch_missing_hugo=fetch_missing_hugo)
+            except FileNotFoundError as error:
+                print("RNA Seq Data not found in archive")
         tar.close()
-    # Read in data:
-    return read_rna_file(folder+"/data_RNA_Seq_v2_expression_median.txt", fetch_missing_hugo=fetch_missing_hugo)
 
-
-def download_from_xena(url="https://tcga-xena-hub.s3.us-east-1.amazonaws.com/latest/TCGA.UCS.sampleMap/HiSeqV2.gz", save_location=get_td_Home()+"data/downloaded/", delete_after=False, fetch_missing_hugo=True):
+def download_from_xena(url="https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA.UCS.sampleMap/HiSeqV2.gz", save_location=get_td_Home()+"data/downloaded/", delete_after=False, fetch_missing_hugo=True):
     """
     Function to download data directly from TCGA Xena Hub and read it in as a pandas df.
         Inputs:
