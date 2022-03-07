@@ -51,8 +51,7 @@ def read_rna_file(rna_file_path, identifier='hugo', fetch_missing_hugo=False):
         raise ReadError("Data Format not recognized")
 
     # Drop duplicate genes:
-    # remove duplicates:
-    # rna = rna.loc[~rna.index.duplicated(keep='first')] # argument keep = first, last, max, mean
+    rna = rna.loc[~rna.index.duplicated(keep='first')] # argument keep = first, last, max, mean
 
     # Drop NA (if any):
     rna.dropna(axis=0, how='any', inplace=True)
