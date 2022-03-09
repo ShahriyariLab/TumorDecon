@@ -5,7 +5,7 @@ from TumorDecon.DeconRNASeq import *
 from TumorDecon.ssGSEA import *
 from TumorDecon.SingScore import *
 
-def tumor_deconvolve(mixture_data, method, patient_IDs='ALL', cell_signatures=None, up_genes=None, down_genes=None, args={}):
+def tumor_deconvolve(mixture_data, method, patient_IDs='ALL', sig_matrix=None, up_genes=None, down_genes=None, args={}):
     """
         For each patient, given mixture data, cell signatures, and a deconvolution
             method, return frequencies/ranks for each cell type
@@ -15,7 +15,7 @@ def tumor_deconvolve(mixture_data, method, patient_IDs='ALL', cell_signatures=No
             - method: Method for tumor deconvolution. Must be either 'CIBERSORT', 'DeconRNASeq', 'ssGSEA', or 'SingScore'
             - patient_IDs: list of patient IDs to run DeconRNASeq for.
                 Alternatively, can use the string 'ALL' to run for all patients
-            - cell_signatures: pandas df of Signature gene expression values for given cell types.
+            - sig_matrix: pandas df of Signature gene expression values for given cell types.
                 Rows are genes (indexed by 'Hugo_Symbol') and columns are cell types
                 *** Required for 'CIBERSORT' and 'DeconRNASeq' methods ***
                     (ignored for 'ssGSEA' and 'SingScore' methods)
@@ -46,12 +46,12 @@ def tumor_deconvolve(mixture_data, method, patient_IDs='ALL', cell_signatures=No
     else:
         raise TypeError("mixture_data must be a pandas dataframe")
 
-    if cell_signatures is not None:
-        if isinstance(cell_signatures, pd.DataFrame):
+    if sig_matrix is not None:
+        if isinstance(sig_matrix, pd.DataFrame):
             # TO DO: Make sure index matches that of mixture_data
             pass
         else:
-            raise TypeError("cell_signatures must be a pandas dataframe")
+            raise TypeError("sig_matrix must be a pandas dataframe")
 
     if up_genes is not None:
         if isinstance(up_genes, Mapping):
@@ -72,16 +72,16 @@ def tumor_deconvolve(mixture_data, method, patient_IDs='ALL', cell_signatures=No
 
     # Apply the method:
     if method in ['CIBERSORT', 'Cibersort', 'cibersort']:
-        if cell_signatures is not None:
-            x = cibersort_main(mixture_data, cell_signatures, patient_IDs, args)
+        if sig_matrix is not None:
+            x = cibersort_main(mixture_data, sig_matrix, patient_IDs, args)
         else:
-            raise ValueError("'cell_signatures' argument required for CIBERSORT method")
+            raise ValueError("'sig_matrix' argument required for CIBERSORT method")
 
     elif method in ['DeconRNASeq', 'deconrnaseq', 'DeconRNAseq', 'deconRNAseq']:
-        if cell_signatures is not None:
-            x = DeconRNASeq_main(mixture_data, cell_signatures, patient_IDs, args)
+        if sig_matrix is not None:
+            x = DeconRNASeq_main(mixture_data, sig_matrix, patient_IDs, args)
         else:
-            raise ValueError("'cell_signatures' argument required for DeconRNASeq method")
+            raise ValueError("'sig_matrix' argument required for DeconRNASeq method")
 
     elif method in ['ssGSEA', 'ssgsea', 'SSGSEA']:
         if up_genes is not None:

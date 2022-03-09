@@ -45,7 +45,7 @@ def compute_lasso(x, A, b, reg=1.0):
 
 
 
-def DeconRNASeq(S, m, formulation="qp", reg_constant=1.0, print_results=False, label=''):
+def DeconRNASeq(S, m, formulation="qp", reg_constant=1.0, print_progress=False, label=''):
     """
     Solves for the vector x that minimizes ||Sx-m||^2 under the additional constraints:
         Sum(x_i) = 1
@@ -60,10 +60,10 @@ def DeconRNASeq(S, m, formulation="qp", reg_constant=1.0, print_results=False, l
             'lasso': solve a lasso regression problem min_x{||Ax-b||^2 + Sum_i{|x_i|} with condition xi>=0
         - reg_constant: float, regularization constant for lasso/ridge regression
         - print_result: boolean, whether or not to print the solver (scipy.optimize) results
-        - label: patient ID label. Only used if print_results = True
+        - label: patient ID label. Only used if print_progress = True
     Outputs:
         - xopt: optimal frequency vector found by scipy.optimize
-        - (if print_results) prints the scipy.optimize output to standard output
+        - (if print_progress) prints the scipy.optimize output to standard output
     """
     import scipy.optimize as opt
     import numpy as np
@@ -93,14 +93,14 @@ def DeconRNASeq(S, m, formulation="qp", reg_constant=1.0, print_results=False, l
         elif formulation == 'lasso':
             soln = opt.minimize(compute_lasso, x0, bounds=bnds, constraints=None, args=(S,m,reg_constant))
 
-    if print_results:
+    if print_progress:
         print()
         print(label)
         print(soln)
         print()
     else:
         if soln['success'] == False:
-            warnings.warn("DeconRNASeq optimization did not terminate successfully. For more details: re-run with optional argument 'print_results:True'", category=UserWarning)
+            warnings.warn("DeconRNASeq optimization did not terminate successfully. For more details: re-run with optional argument 'print_progress:True'", category=UserWarning)
 
     xopt = soln['x']
 
@@ -171,12 +171,12 @@ def DeconRNASeq_main(rna_df, sig_df, patient_IDs='ALL', args={}):
             raise ValueError("scaling_axis ({!r}) must be 0 or 1".format(scaling_axis))
     else:
         scaling_axis = 0
-    if 'print_results' in args.keys():
-        print_results = args['print_results']
-        if not isinstance(print_results, bool):
-            raise ValueError("print_results ({!r}) must be a boolean variable".format(print_results))
+    if 'print_progress' in args.keys():
+        print_progress = args['print_progress']
+        if not isinstance(print_progress, bool):
+            raise ValueError("print_progress ({!r}) must be a boolean variable".format(print_progress))
     else:
-        print_results = False
+        print_progress = False
 
 
     # eliminate genes not present in both rna and sig dfs, and ensure they are in the same order:
@@ -212,10 +212,10 @@ def DeconRNASeq_main(rna_df, sig_df, patient_IDs='ALL', args={}):
     for patient in patient_list:
         if patient in rna_df.columns:
             Mix = np.array(rna_df[patient])
-            cell_freqs_df[patient] = DeconRNASeq(Sig, Mix, formulation=formulation, reg_constant=reg_constant, print_results=print_results, label=patient)
+            cell_freqs_df[patient] = DeconRNASeq(Sig, Mix, formulation=formulation, reg_constant=reg_constant, print_progress=print_progress, label=patient)
         else:
             raise ValueError("patient_ID ({!r}) not present in rna dataframe".format(patient))
 
     cell_freqs_df = cell_freqs_df.transpose()
-
+    print("DeconRNASeq has completed!")
     return cell_freqs_df

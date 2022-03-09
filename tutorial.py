@@ -18,7 +18,7 @@ import TumorDecon as td
 """
 To perform digital cytometry on a mixture data, given cell signatures and the deconvolution method of your choice, run:
 
- td.tumor_deconvolve(mixture_data, method, patient_IDs='ALL', cell_signatures=None, up_genes=None, down_genes=None)
+ td.tumor_deconvolve(mixture_data, method, patient_IDs='ALL', sig_matrix=None, up_genes=None, down_genes=None)
 
 Explanation of Inputs:
     - mixture_data: pandas df of rna gene expression data.
@@ -26,7 +26,7 @@ Explanation of Inputs:
     - method: Method for tumor deconvolution. Must be either 'CIBERSORT', 'DeconRNASeq', 'ssGSEA', or 'SingScore'
     - patient_IDs: list of patient IDs to run DeconRNASeq for.
         Alternatively, can use the string 'ALL' to run for all patients
-    - cell_signatures: pandas df of Signature gene expression values for given cell types.
+    - sig_matrix: pandas df of Signature gene expression values for given cell types.
         Rows are genes (indexed by 'Hugo_Symbol') and columns are cell types
         *** Required for 'CIBERSORT' and 'DeconRNASeq' methods ***
             (ignored for 'ssGSEA' and 'SingScore' methods)
@@ -54,9 +54,6 @@ rna = td.download_by_name('cbio', 'Colorectal Adenocarcinoma', fetch_missing_hug
 ## Can alternatively read in a data file already downloaded:
 # rna = td.read_rna_file(data_loc+'coadred_data_RNA_Seq_v2_expression_median.txt')
 
-## Drop any rows (genes) that contain a NaN value from rna expression data
-rna.dropna(axis=0, inplace=True)
-
 ################################################################################
 ############################# Linear Models ####################################
 ################################################################################
@@ -82,8 +79,8 @@ print(sig2)
 ##    'nu','C','kernel': all arguments to be passed to sklearn's implementation of NuSVR. See sklearn documentation for details
 ##       additionally, can pass in 'nu':'best' to choose the nu from {0.25, 0.5, 0.75} that minimizes the root mean square error
 ##       defaults are nu='best', C=1.0, kernel=linear
-##   'print_progress': whether to print patient ID as ssGSEA iterates through (default: False)
-ciber_freqs = td.tumor_deconvolve(rna, 'cibersort',  patient_IDs='ALL', cell_signatures=sig, args={'nu':'best', 'scaling':'minmax'})
+##   'print_progress': whether to print patient ID as cibersort works through each patient (default: False)
+ciber_freqs = td.tumor_deconvolve(rna, 'cibersort',  patient_IDs='ALL', sig_matrix=sig, args={'nu':'best', 'scaling':'minmax'})
 print("CIBERSORT Results:")
 print(ciber_freqs)
 
@@ -95,9 +92,8 @@ ciber_freqs.to_csv("cibersort_results.csv", index_label='Patient_ID')
 ##    'scaling': Same as in cibersort
 ##    'scaling_axis': Same as in cibersort
 ##    'check_sig': whether to check the condition number of the signature matrix before solving (default: False)
-##    'print_results': whether to print the results of each fit while function is running (default: False)
-##   'print_progress': whether to print patient ID as ssGSEA iterates through (default: False)
-decon_freqs = td.tumor_deconvolve(rna, 'DeconRNASeq',  patient_IDs='ALL', cell_signatures=sig, args={'scaling':'minmax', 'print_results':False})
+##    'print_progress': whether to print the results of each fit while function is running (default: False)
+decon_freqs = td.tumor_deconvolve(rna, 'DeconRNASeq',  patient_IDs='ALL', sig_matrix=sig, args={'scaling':'minmax', 'print_progress':False})
 print("DeconRNASeq Results:")
 print(decon_freqs)
 

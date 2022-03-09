@@ -139,4 +139,5 @@ def ssGSEA_main(rna_df, up_genes=None, patient_IDs='ALL', args={}):
         scores = scores / range
 
     scores = scores.transpose()
+    print("ssGSEA has completed!")
     return scores
