@@ -5,12 +5,12 @@ def get_td_Home():
     # Returns the path where this file is stored
     return os.path.realpath(__file__).strip("data_utils.py")
 
-def read_rna_file(rna_file_path, identifier='hugo', fetch_missing_hugo=False):
+def read_rna_file(file_path, identifier='hugo', fetch_missing_hugo=False):
     """
     Read in a cbioportal pancancer or TCGA Xena Hug txt file containing mixture gene expression data, and return a pandas dataframe.
     Columns are patients, Rows are genes
     Inputs:
-        - rna_file_path: string. Relative or full path to the RNA seq file
+        - file_path: string. Relative or full path to the RNA seq file
             This file is tab seperated and includes two columns, 'Hugo_Symbol' and 'Entrez_Gene_Id', for each
             gene preceding the expression values for each patient
         - identifier: string. Determines which gene identifier to use to index the rna data.
@@ -25,7 +25,7 @@ def read_rna_file(rna_file_path, identifier='hugo', fetch_missing_hugo=False):
     import pandas as pd
     from TumorDecon.hugoify import hugo
 
-    rna = pd.read_csv(rna_file_path,  sep='\t')
+    rna = pd.read_csv(file_path,  sep='\t')
 
     # Xena Hub:
     if "sample" in rna.columns:
@@ -60,7 +60,7 @@ def read_rna_file(rna_file_path, identifier='hugo', fetch_missing_hugo=False):
     return rna
 
 
-def download_by_name(source, type, fetch_missing_hugo=True):
+def download_by_name(source, type, fetch_missing_hugo=False):
     """
     Function to download TCGA data from either UCSC Xena Hub or cBioPortal given
     the desired source and cancer type, instead of a URL.
@@ -126,6 +126,7 @@ def download_from_cbio(url="https://cbioportal-datahub.s3.amazonaws.com/uvm_tcga
         # Download file and save it locally:
         print("Downloading data from cbioportal...")
         wget.download(url, save_location)
+        print()
     # Unzip if applicable
     folder = file.replace(".tar.gz","")
     if file.endswith("tar.gz") and not os.path.exists(folder):
@@ -162,6 +163,7 @@ def download_from_xena(url="https://tcga-xena-hub.s3.us-east-1.amazonaws.com/dow
     # Download file and save it locally:
     print("Downloading data from Xena Hub...")
     wget.download(url, save_location)
+    print()
     # pandas read_csv can handle the zipped file - no need to unzip
     # Read in data:
     logdf = read_rna_file(zipfile, fetch_missing_hugo=fetch_missing_hugo)
@@ -170,34 +172,7 @@ def download_from_xena(url="https://tcga-xena-hub.s3.us-east-1.amazonaws.com/dow
     return df
 
 
-# # OBSOLETE! Use read_sig_file() with no arguments to read in LM22.txt instead
-# def read_lm22_file(file_path=get_td_Home()+"data/LM22.txt"):
-#     """
-#     Read in the LM22 (or LM6) signature matrix file (containing signature gene expression data for 22 different cell types)
-#     and return a pandas dataframe
-#     Inputs:
-#         - file_path: string. Relative or full path to the LM22/LM6 signature matrix file
-#             This file is tab seperated. Columns are cell types, Rows are gene Hugo Symbols.
-#     Output:
-#         - pandas data frame. Columns are cell types, Rows are genes, indexed by Hugo Symbol.
-#     """
-#
-#     import pandas as pd
-#
-#     print("WARNING: 'read_lm22_file()'' depreciated. Use 'read_sig_file()' with no arguments to read in 'LM22.txt' signatures")
-#
-#     lm22 = pd.read_csv(file_path, sep='\t')
-#     # lm22['Hugo_Symbol'] = lm22['Gene symbol']
-#     # lm22 = lm22.drop(['Gene symbol'], axis = 1)
-#     new_column_names = lm22.columns.tolist()
-#     new_column_names[0] = 'Hugo_Symbol'
-#     lm22.columns = new_column_names
-#     lm22 = lm22.set_index(['Hugo_Symbol'])
-#
-#     return lm22
-
-
-def read_sig_file(file_path=get_td_Home()+"data/LM22.txt", geneID="Hugo_Symbol"):
+def read_sig_file(file_path=get_td_Home()+"data/LM22.txt", delim="\t", geneID="Hugo_Symbol"):
     """
     Reads in a signature matrix file (containing signature gene expression data for
     a number of different cell types), converts the gene identifiers to Hugo Symbols,
@@ -207,6 +182,7 @@ def read_sig_file(file_path=get_td_Home()+"data/LM22.txt", geneID="Hugo_Symbol")
         - file_path: string. Relative or full path to signature matrix file.
             This file is tab seperated. Columns are cell types, Rows are genes
             If no file_path given, LM22 is assumed.
+        - delim: String. Delimiter to use. Default is '\t' (tab separated)
         - geneID: string in ["Hugo_Symbol", "Ensembl_Gene_ID", "Entrez_Gene_ID"].
             Describes how genes are labeled in the signature matrix file
     Output:
@@ -215,7 +191,7 @@ def read_sig_file(file_path=get_td_Home()+"data/LM22.txt", geneID="Hugo_Symbol")
     import pandas as pd
 
     # Read file:
-    sig = pd.read_csv(file_path, sep='\t')
+    sig = pd.read_csv(file_path, sep=delim)
     # Get name of column with gene identifiers:
     gene_col = list(sig)[0]
 
@@ -467,7 +443,7 @@ def read_geneset(file_path=get_td_Home()+"data/LM22_up_genes.csv"):
         Function to read in a custom csv file containing the up or down regulated
             genes for each cell type
         Inputs:
-            - file_path: string. Relative or full path to signature matrix file.
+            - file_path: string. Relative or full path to csv file.
             File should have columns named for each cell type, and rows should
             contain Hugo Symbols for genes to be considered as up (or down)
             regulated for that cell type. If not all cell types have the same number of up(down)
