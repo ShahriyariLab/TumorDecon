@@ -44,15 +44,18 @@ Output:
         Rows are indexed by cell type, columns are patient IDs
 """
 
-# Sample data location
+# Location of sample data (included with the TumorDecon package):
 data_loc = td.get_td_Home()+"data/"
 
-## read in sample data (download colon cancer gene expressions directly from cbioportal)
-## and fetch any missing Hugo Symbols from NCBI website:
-rna = td.download_by_name('cbio', 'Colorectal Adenocarcinoma', fetch_missing_hugo=True)
+# Read in sample data (original source - Colorectal Adenocarcinoma RNA Seq v2 from cBioPortal.org):
+rna = td.read_rna_file(data_loc+'coadred_data_RNA_Seq_v2_expression_median.txt')
+print(rna)
 
-## Can alternatively read in a data file already downloaded:
-# rna = td.read_rna_file(data_loc+'coadred_data_RNA_Seq_v2_expression_median.txt')
+## Can alternatively download additional data sets directly from cBioPortal:
+## and fetch any missing Hugo Symbols from NCBI website:
+import os
+rna2 = td.download_by_name('cbio', 'Uveal Melanoma', download_to=os.getcwd(), fetch_missing_hugo=True)
+print(rna2)
 
 ################################################################################
 ############################# Linear Models ####################################
@@ -153,10 +156,10 @@ results = ciber_freqs.loc[patient_subset]
 td.cell_frequency_boxplot(results, save_as="boxplots.png")
 
 ## Can also visualize with barcharts:
-td.cell_frequency_barchart(results, save_as="barcharts.png"))
+td.cell_frequency_barchart(results, save_as="barcharts.png")
 
 # Pair Plots:
-td.pair_plot(results, save_as="pairplots.png"))
+td.pair_plot(results, save_as="pairplots.png")
 
 # and Clustermaps.
 td.hierarchical_clustering(results, save_as="clustermaps.png")

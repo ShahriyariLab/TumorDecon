@@ -60,13 +60,14 @@ def read_rna_file(file_path, identifier='hugo', fetch_missing_hugo=False):
     return rna
 
 
-def download_by_name(source, type, fetch_missing_hugo=False):
+def download_by_name(source, type, download_to=get_td_Home()+"data/downloaded/", fetch_missing_hugo=False,):
     """
     Function to download TCGA data from either UCSC Xena Hub or cBioPortal given
     the desired source and cancer type, instead of a URL.
         Inputs:
             - source: either "xena" or "cbio"
             - type: specific strings. Each will be presented as options in a dropdown menu in the GUI
+            - download_to: String. Directory to save downloaded data to. Default is the data/downloads folder within the package library
             - fetch_missing_hugo: boolean. Whether to fetch missing Hugo Symbols (by Entrez Gene ID) from ncbi website
         Outputs:
             - pandas df of mixture data
@@ -84,7 +85,7 @@ def download_by_name(source, type, fetch_missing_hugo=False):
         else:
             raise ValueError("type {!r} not available from UCSC Xena".format(type))
         # Download and return:
-        data = download_from_xena(url="https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA."+urlcode+".sampleMap/HiSeqV2.gz", fetch_missing_hugo=fetch_missing_hugo)
+        data = download_from_xena(url="https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA."+urlcode+".sampleMap/HiSeqV2.gz", save_location=download_to, fetch_missing_hugo=fetch_missing_hugo)
         return data
     elif source in ["cbio", "CbioPortal", "cbioportal", "cBioPortal"]:
         type_dict = {'Acute Myeloid Leukemia':'laml','Adrenocortical Carcinoma':'acc', 'Bladder Urothelial Carcinoma':'blca', 'Brain Lower Grade Glioma':'lgg', 'Breast Invasive Carcinoma':'brca',
@@ -98,7 +99,7 @@ def download_by_name(source, type, fetch_missing_hugo=False):
         else:
             raise ValueError("type {!r} not available from CbioPortal".format(type))
         # Download and return:
-        data = download_from_cbio(url="https://cbioportal-datahub.s3.amazonaws.com/"+urlcode+"_tcga_pan_can_atlas_2018.tar.gz", fetch_missing_hugo=fetch_missing_hugo)
+        data = download_from_cbio(url="https://cbioportal-datahub.s3.amazonaws.com/"+urlcode+"_tcga_pan_can_atlas_2018.tar.gz", save_location=download_to, fetch_missing_hugo=fetch_missing_hugo)
         return data
     else:
         raise ValueError("source ({!r}) must be 'xena' or 'cbioportal'".format(source))
@@ -121,15 +122,19 @@ def download_from_cbio(url="https://cbioportal-datahub.s3.amazonaws.com/uvm_tcga
     import os
 
     # Check if file already downloaded, if not, download it:
-    file = save_location+url.replace('https://cbioportal-datahub.s3.amazonaws.com/','')
+    file = save_location+url.replace('https://cbioportal-datahub.s3.amazonaws.com','')
     if not os.path.exists(file):
         # Download file and save it locally:
-        print("Downloading data from cbioportal...")
+        print("Downloading data from cbioportal to "+file+"...")
         wget.download(url, save_location)
+        print()
+    else:
+        print("Data already exists in "+file+" - using this file (remove or rename in order to re-download).")
         print()
     # Unzip if applicable
     folder = file.replace(".tar.gz","")
-    if file.endswith("tar.gz") and not os.path.exists(folder):
+    if file.endswith("tar.gz"): 
+        tar = tarfile.open(file, "r:gz")
         try:
             tar.extract(folder.split("/")[-1]+"/data_RNA_Seq_v2_expression_median.txt", path=save_location)
             return read_rna_file(folder+"/data_RNA_Seq_v2_expression_median.txt", fetch_missing_hugo=fetch_missing_hugo)
@@ -157,11 +162,11 @@ def download_from_xena(url="https://tcga-xena-hub.s3.us-east-1.amazonaws.com/dow
     import os
 
     # Since all cancer types have the same filename, re-download every time:
-    zipfile = save_location+url.split('/')[-1]
+    zipfile = save_location+'/'+url.split('/')[-1]
     if os.path.exists(zipfile):
         os.remove(zipfile)
     # Download file and save it locally:
-    print("Downloading data from Xena Hub...")
+    print("Downloading data from Xena Hub to "+zipfile+"...")
     wget.download(url, save_location)
     print()
     # pandas read_csv can handle the zipped file - no need to unzip
