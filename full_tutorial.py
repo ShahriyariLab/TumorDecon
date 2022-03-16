@@ -45,15 +45,18 @@ Output:
         Rows are indexed by cell type, columns are patient IDs
 """
 
-## read in sample data (download colon cancer gene expressions directly from cbioportal)
-## and fetch any missing Hugo Symbols from NCBI website:
-rna = td.download_by_name('cbio', 'Uveal Melanoma', fetch_missing_hugo=False)
-
-## Can alternatively read in a data file already downloaded:
-## The location "td.get_td_Home()" refers to the install location of the TumorDecon package
+# Location of sample data (included with the TumorDecon package):
 data_loc = td.get_td_Home()+"data/"
-# rna = td.read_rna_file(data_loc+'coadred_data_RNA_Seq_v2_expression_median.txt')
 
+# Read in sample data (original source - Colorectal Adenocarcinoma RNA Seq v2 from cBioPortal.org):
+sample_rna = td.read_rna_file(data_loc+'coadred_data_RNA_Seq_v2_expression_median.txt')
+print(sample_rna)
+
+## Can alternatively download additional data sets directly from cBioPortal:
+## and fetch any missing Hugo Symbols from NCBI website:
+import os
+rna = td.download_by_name('cbio', 'Uveal Melanoma', download_to=os.getcwd(), fetch_missing_hugo=True)
+print(rna)
 
 """
 The following section walks through an example of generating a signature matrix from raw
@@ -114,14 +117,13 @@ td.create_signature_matrix("batch_corrected_sample_data_clustered.txt", cell_typ
 
 # Read in default signature matrix file (LM22):
 sig = td.read_sig_file()
-# (Can also pass in a filename of an alternative signature)
 print("LM22 Signature Matrix:")
 print(sig)
 
 ## We can also use the custom signature matrix we created above:
     ## Note that this signature matrix uses Ensembl Gene IDs instead of Hugo Symbols.
     ## The read_sig_file() function can convert these to Hugo Symbols, by specifying the geneID:
-path_to_custom_sig = 'kmeans_signature_matrix_qval.txt' # CHANGE this to match where you saved the file above
+path_to_custom_sig = 'kmeans_signature_matrix_qval.txt' # CHANGE this to match where you saved the custom signature matrix created in the previous step
 sig2 = td.read_sig_file(path_to_custom_sig, geneID='Ensembl_Gene_ID')
 print("Custom Signature Matrix created:")
 print(sig2)
@@ -150,6 +152,7 @@ ciber_freqs.to_csv("cibersort_results.csv", index_label='Patient_ID')
 decon_freqs = td.tumor_deconvolve(rna, 'DeconRNASeq',  patient_IDs='ALL', sig_matrix=sig, args={'scaling':'minmax', 'print_progress':False})
 print("DeconRNASeq Results:")
 print(decon_freqs)
+## Save results to a file:
 decon_freqs.to_csv("DeconRNASeq_results.csv", index_label='Patient_ID')
 
 ################################################################################
@@ -182,11 +185,14 @@ patient_subset = ['TCGA-RZ-AB0B-01', 'TCGA-V3-A9ZX-01', 'TCGA-V3-A9ZY-01', 'TCGA
 ssgsea_scores = td.tumor_deconvolve(rna, 'ssGSEA',  patient_IDs=patient_subset, up_genes=up_geneset, args={'alpha':0.5, 'norm':True, 'print_progress':False})
 print("ssGSEA Results:")
 print(ssgsea_scores)
+## Save results to a file:
+ssgsea_scores.to_csv("ssGSEA_results.csv", index_label='Patient_ID')
 
 ## SingScore can be run with just an up-regulated gene set (unidirectional):
 singscore_unidirectional = td.tumor_deconvolve(rna, 'singscore',  patient_IDs=patient_subset, up_genes=up_geneset)
 print("SingScore Results:")
 print(singscore_unidirectional)
+singscore_unidirectional.to_csv("singscore_results.csv", index_label='Patient_ID')
 
 ## or with both an up-regulated and down-regulated gene set (bidirectional):
 ## (Can also derive up-regulated and down-regulated genes from a signature matrix, such as LM6 file):
@@ -223,16 +229,12 @@ results = ciber_freqs
 
 ## Can visualize results with boxplots:
 td.cell_frequency_boxplot(results, title="Distribution of Cell Types in all Samples", font_scale=0.75, title_fontsize=15, save_as="example_boxplot.png")
-# CHANGE PATH
 ## Barcharts:
 td.cell_frequency_barchart(results, title="Distribution of Cell Types within Individual Samples", save_as="example_barchart.png")
-# CHANGE PATH
 # Cluster Maps:
 td.hierarchical_clustering(results, title="Cluster Map", figsize=(15,15), save_as="example_clutermap.png")
-# CHANGE PATH
 # and Pair Plots:
 td.pair_plot(results, save_as="example_pairplot.png")
-# CHANGE PATH
 
 ## As mentioned above, these visualization functions simplify the results by summing the frequencies/scores of related cell types!
 ## You can use the "combine_celltypes" function to create such a simplified output dataframe.
