@@ -17,4 +17,6 @@ https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE109448
 https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE109449
 https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE98011
 
-Note that datasets GSE98638 and GSE115978 exceed GitHub's file size limit, and are therefore only available via the NCBI links above.
+Note that datasets GSE98638 and GSE115978 exceed GitHub's file size limit, and are therefore not included here. However, all files can be downloaded as a single .zip file here:
+
+https://drive.google.com/file/d/167R7Sw9ZxLzY0pZCr0IYa6YUd2y3CHjZ/view?usp=sharing 
