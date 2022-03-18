@@ -77,7 +77,7 @@ print(sig2)
 
 ## Run cibersort on ALL patients:
 ## optional argments include:
-##    'scaling': how to scale the data (rna mixture & signature matrix) before applying DeconRNASeq (must be either 'None', 'zscore', or 'minmax')
+##    'scaling': how to scale the data (rna mixture & signature matrix) before applying CiberSort (must be either 'None', 'zscore', or 'minmax')
 ##    'scaling_axis': whether to scale data by normalizing each cell types / patient individually (0) or each gene individually (1). default is 0
 ##    'nu','C','kernel': all arguments to be passed to sklearn's implementation of NuSVR. See sklearn documentation for details
 ##       additionally, can pass in 'nu':'best' to choose the nu from {0.25, 0.5, 0.75} that minimizes the root mean square error
