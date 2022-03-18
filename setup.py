@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="TumorDecon",
-    version="1.0.0",
+    version="1.1.1",
     author="ShahriyariLab",
     author_email="lshahriyari@umass.edu",
     description="Deconvolution Methods for Digital Cytometry",
