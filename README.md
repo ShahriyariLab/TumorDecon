@@ -14,4 +14,8 @@ pip install git+https://github.com/kristyhoran/singscore
 ```
 
 If you use the package or some parts of codes, please cite:
+
+Rachel A. Aronow, Shaya Akbarinejad, Trang Le, Sumeyye Su, Leili Shahriyari, TumorDecon: A digital cytometry software, SoftwareX, Volume 18, 2022, 101072, https://doi.org/10.1016/j.softx.2022.101072.
+
+
 T. Le, R. Aronow, A. Kirshtein, L. Shahriyari, A review of digital cytometry methods: estimating the relative abundance of cell types in a bulk of cells,  Briefing in Bioinformatics, 2020.  
