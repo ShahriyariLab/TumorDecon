@@ -84,7 +84,10 @@ def remove_batch_effect(files_list, cell_type, address):
         assert(cell_type_data.shape[1] != 0), cell_type + " is not present in " + file_name
 
         temp_batch = pd.Series([i for _ in range(len(list(cell_type_data)))], index=list(cell_type_data))
-        batch = batch._append(temp_batch)
+        if batch.empty:
+            batch=temp_batch
+        else:           
+            batch = pd.concat([batch, temp_batch])
         cell_type_data = cell_type_data.loc[~cell_type_data.index.duplicated(keep='first')]
         data_dict.append(cell_type_data)
     data_combined = pd.concat(data_dict, axis=1, sort=True)
