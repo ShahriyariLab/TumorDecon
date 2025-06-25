@@ -208,7 +208,7 @@ def run_tumor_decon():
             scaling = 'minmax'
         new_text = "Ran "+m.get()+" with sig matrix "+s.get()+" and "+scaling+" normalization"
         status["text"] = new_text
-        solns = td.tumor_deconvolve(rna_df, method, patient_IDs='ALL', cell_signatures=sig_df, args={'scaling_axix':0, 'scaling':scaling})
+        solns = td.tumor_deconvolve(rna_df, method, patient_IDs='ALL', sig_matrix=sig_df, args={'scaling_axix':0, 'scaling':scaling})
 
     else: # ssgsea, singscore
         if u.get() == "ssGSEA paper gene set":
