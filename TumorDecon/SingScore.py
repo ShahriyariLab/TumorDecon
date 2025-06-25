@@ -23,7 +23,7 @@ def SingScore_main(rna_df, up_genes=None, down_genes=None, patient_IDs='ALL', ar
     from singscore import singscore
     import pandas as pd
     from .data_utils import read_ssGSEA_up_genes
-    from collections import Mapping
+    from collections.abc import Mapping
 
     # Select a patient / list of patients to solve for their cell type frequencies:
         # Patient_ID must be 'ALL' or an array of specific patient IDs.
