@@ -20,11 +20,31 @@ def SingScore_main(rna_df, up_genes=None, down_genes=None, patient_IDs='ALL', ar
             dictionary, for each patient in 'patient_IDs' list.
             Rows are indexed by cell type, columns are patient IDs
     """
-    from singscore import singscore
     import pandas as pd
+    from collections.abc import Mapping
     from .data_utils import read_ssGSEA_up_genes
-    from collections import Mapping
+    # --- pandas >= 2.0 compatibility: restore removed .append() for old deps ---
+    if not hasattr(pd.DataFrame, "append"):
+        def _df_append(self, other, ignore_index=False, verify_integrity=False, sort=False):
+            return pd.concat(
+                [self, other],
+                ignore_index=ignore_index,
+                verify_integrity=verify_integrity,
+                sort=sort,
+            )
+        pd.DataFrame.append = _df_append  # compatibility shim
 
+    if not hasattr(pd.Series, "append"):
+        def _series_append(self, to_append, ignore_index=False, verify_integrity=False):
+            return pd.concat(
+                [self, to_append],
+                ignore_index=ignore_index,
+                verify_integrity=verify_integrity,
+            )
+        pd.Series.append = _series_append  
+    
+    #now singscore can safely call .append at runtime
+    from singscore import singscore
     # Select a patient / list of patients to solve for their cell type frequencies:
         # Patient_ID must be 'ALL' or an array of specific patient IDs.
     if patient_IDs == 'ALL':
@@ -41,8 +61,8 @@ def SingScore_main(rna_df, up_genes=None, down_genes=None, patient_IDs='ALL', ar
             raise ValueError("up_genes argument must be a dictionary")
 
     if down_genes is not None:
-        if not isinstance(up_genes, Mapping):
-            raise ValueError("up_genes argument must be a dictionary")
+        if not isinstance(down_genes, Mapping):
+            raise ValueError("down_genes argument must be a dictionary")
         elif set(up_genes.keys()) != set(down_genes.keys()):
             raise KeyError("Keys (cell type) of up_genes and down_genes must match")
 
@@ -56,7 +76,7 @@ def SingScore_main(rna_df, up_genes=None, down_genes=None, patient_IDs='ALL', ar
         if down_genes is None:
             score = singscore.score(up_gene=up_genes[cell_type], sample=sample_df)
         else:
-            score = singscore.score(up_gene=up_genes[cell_type], down_gene=up_genes[cell_type], sample=sample_df)
+            score = singscore.score(up_gene=up_genes[cell_type], down_gene=down_genes[cell_type], sample=sample_df)
         score.rename(columns={'total_score': cell_type}, inplace=True)
         scores = pd.concat([scores, score], axis=1)
     scores.index.name='Patient_ID'
