@@ -75,7 +75,7 @@ def remove_batch_effect(files_list, cell_type, address):
     import pandas as pd
     from combat.pycombat import pycombat
 
-    batch = pd.Series()
+    batch_parts = []
     data_dict = []
     for (i, file_name) in enumerate(files_list):
         data = pd.read_csv(address+file_name, sep="\t", header=0)
@@ -83,10 +83,11 @@ def remove_batch_effect(files_list, cell_type, address):
         cell_type_data = data.loc[:, data.columns.str.contains(cell_type)]
         assert(cell_type_data.shape[1] != 0), cell_type + " is not present in " + file_name
 
-        temp_batch = pd.Series([i for _ in range(len(list(cell_type_data)))], index=list(cell_type_data))
-        batch = batch.append(temp_batch)
+        temp_batch = pd.Series([i] * cell_type_data.shape[1], index=cell_type_data.columns, dtype="int64")
+        batch_parts.append(temp_batch)
         cell_type_data = cell_type_data.loc[~cell_type_data.index.duplicated(keep='first')]
         data_dict.append(cell_type_data)
+    batch = pd.concat(batch_parts)    
     data_combined = pd.concat(data_dict, axis=1, sort=True)
     data_combined = data_combined.apply(lambda row: row.fillna(row.mean()), axis=1)
     data_combined.dropna(inplace=True)
