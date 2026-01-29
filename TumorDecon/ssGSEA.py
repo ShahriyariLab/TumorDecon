@@ -77,7 +77,7 @@ def ssGSEA_main(rna_df, up_genes=None, patient_IDs='ALL', args={}):
     """
     import pandas as pd
     import numpy as np
-    from collections import Mapping
+    from collections.abc import Mapping
     from .data_utils import read_ssGSEA_up_genes
 
     # Read in optional arguments, or set them as default

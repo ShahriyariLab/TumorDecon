@@ -48,7 +48,7 @@ def read_rna_file(file_path, identifier='hugo', fetch_missing_hugo=False):
         else:
             raise ValueError("gene identifier must be set to 'hugo' or 'entrez'")
     else:
-        raise ReadError("Data Format not recognized")
+        raise ValueError("Data Format not recognized")
 
     # Drop duplicate genes:
     rna = rna.loc[~rna.index.duplicated(keep='first')] # argument keep = first, last, max, mean
